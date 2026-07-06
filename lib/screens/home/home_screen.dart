@@ -4,8 +4,15 @@ import 'widgets/greeting_section.dart';
 import 'widgets/search_section.dart';
 import 'widgets/quick_services_section.dart';
 import 'widgets/recent_section.dart';
+import '../../core/theme/app_theme.dart';
 void main() {
-  runApp(const HomeScreen());
+  runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.darkTheme,
+      home: const HomeScreen(),
+    ),
+  );
 }
 
 class HomeScreen extends StatelessWidget{

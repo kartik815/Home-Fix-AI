@@ -5,13 +5,21 @@ class   GreetingSection extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return const Column(children: [
-      Row(children: [Text("👋 "), Text("Good Evening,")]),
-      SizedBox(height: 20),
-      Text("Kartik"),
-      SizedBox(height: 20),
+    const String username = "Kartik";
+    return const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(
+        children: [
+          Text("👋 "),
+         SizedBox(width: 8,),
+          Text("Good Evening,")
+          ]
+          ),
+      SizedBox(height: 8),
+      Text(username),
+      SizedBox(height: 4 ),
       Text("What's happening at home today?"),
       
-    ],);
+    ],
+    );
     }
   }

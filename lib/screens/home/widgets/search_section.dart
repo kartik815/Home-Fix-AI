@@ -5,6 +5,15 @@ class SearchSection extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Column(
+      children: const [
+      TextField(
+        maxLines: null,
+        keyboardType: TextInputType.multiline,
+        decoration: InputDecoration
+      (hintText: "Describe your home problem..."),
+      )
+      ]
+      ,);
     }
   }
