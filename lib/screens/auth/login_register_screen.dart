@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class _Brand {
   static const blue = Color(0xFF3B82F6);
@@ -67,30 +69,128 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
     setState(() => _mode = mode);
   }
 
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _submitting = true);
 
-    // TODO: replace with your real auth call, e.g.:
-    // if (_isLogin) {
-    //   await authRepository.login(_emailCtrl.text, _passwordCtrl.text);
-    // } else {
-    //   await authRepository.register(_nameCtrl.text, _emailCtrl.text, _passwordCtrl.text);
-    // }
-    await Future.delayed(const Duration(milliseconds: 900));
+    try {
+      final FirebaseAuth auth = FirebaseAuth.instance;
 
-    if (!mounted) return;
-    setState(() => _submitting = false);
-    _onAuthenticated();
+      final email = _emailCtrl.text.trim();
+      final password = _passwordCtrl.text.trim();
+
+      UserCredential userCredential;
+
+      if (_isLogin) {
+        // =========================
+        // LOGIN
+        // =========================
+        userCredential = await auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } else {
+        // =========================
+        // REGISTER
+        // =========================
+        userCredential = await auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        // Save user's display name in Firebase Authentication
+        await userCredential.user?.updateDisplayName(
+          _nameCtrl.text.trim(),
+        );
+      }
+
+      // Make sure the widget is still mounted
+      if (!mounted) return;
+
+      setState(() => _submitting = false);
+
+      // Authentication was successful
+      _onAuthenticated();
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+
+      setState(() => _submitting = false);
+
+      String message;
+
+      switch (e.code) {
+        // Login errors
+        case 'invalid-credential':
+        case 'wrong-password':
+        case 'user-not-found':
+          message = 'Invalid email or password.';
+          break;
+
+        case 'invalid-email':
+          message = 'Please enter a valid email address.';
+          break;
+
+        // Registration errors
+        case 'email-already-in-use':
+          message = 'An account already exists with this email.';
+          break;
+
+        case 'weak-password':
+          message = 'Password is too weak. Use at least 6 characters.';
+          break;
+
+        case 'operation-not-allowed':
+          message = 'Email/password authentication is not enabled in Firebase.';
+          break;
+
+        case 'network-request-failed':
+          message = 'Network error. Please check your internet connection.';
+          break;
+
+        case 'too-many-requests':
+          message = 'Too many attempts. Please try again later.';
+          break;
+
+        default:
+          message = e.message ?? 'Authentication failed. Please try again.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() => _submitting = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Something went wrong. Please try again.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   void _onAuthenticated() {
-    // TODO: navigate to your real HomeScreen.
-    // Navigator.of(context).pushReplacement(
-    //   MaterialPageRoute(builder: (_) => const HomeScreen()),
-    // );
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_isLogin ? 'Logged in!' : 'Account created!')),
+      SnackBar(
+        content: Text(
+          _isLogin
+              ? 'Welcome back!'
+              : 'Account created successfully!',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -217,15 +317,68 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
                             )
                           : const SizedBox.shrink(),
                     ),
-
                     if (_isLogin) ...[
                       const SizedBox(height: 8),
                       Align(
                         alignment: Alignment.centerRight,
                         child: TextButton(
-                          onPressed: () {
-                            // TODO: forgot-password flow.
-                          },
+                          onPressed: _submitting
+                              ? null
+                              : () async {
+                                  final email = _emailCtrl.text.trim();
+
+                                  if (email.isEmpty || !email.contains('@')) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Enter your email first.'),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    await FirebaseAuth.instance.sendPasswordResetEmail(
+                                      email: email,
+                                    );
+
+                                    if (!mounted) return;
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Password reset email sent. Check your inbox.',
+                                        ),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  } on FirebaseAuthException catch (e) {
+                                    if (!mounted) return;
+
+                                    String message;
+
+                                    switch (e.code) {
+                                      case 'invalid-email':
+                                        message = 'Please enter a valid email address.';
+                                        break;
+
+                                      case 'user-not-found':
+                                        message = 'No account found with this email.';
+                                        break;
+
+                                      default:
+                                        message =
+                                            e.message ?? 'Unable to send password reset email.';
+                                    }
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(message),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  }
+                                },
                           child: const Text(
                             'Forgot password?',
                             style: TextStyle(color: _Brand.blue, fontSize: 13),
