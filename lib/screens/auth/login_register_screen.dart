@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/screens/home/home_screen.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../home/home_screen.dart';
 
 class _Brand {
   static const blue = Color(0xFF3B82F6);
@@ -191,6 +193,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
         ),
         behavior: SnackBarBehavior.floating,
       ),
+    );
+    
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
     );
   }
 
