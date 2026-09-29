@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "992961158660",
+    "project_id": "home-fix-ai-5429f",
+    "storage_bucket": "home-fix-ai-5429f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:992961158660:android:b18a6e709176b643875f51",
+        "android_client_info": {
+          "package_name": "com.example.test_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxP2Iy-mqpz5CtQNrZrghH5I8xqadsB-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
