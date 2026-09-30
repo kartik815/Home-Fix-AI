@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../models/professional_model.dart';
+import '../maps/professional_details_screen.dart';
+
 class ProfessionalCard extends StatelessWidget {
   final String name;
   final double rating;
@@ -122,7 +125,38 @@ class ProfessionalCard extends StatelessWidget {
             height: 44,
             child: OutlinedButton(
               onPressed: () {
-                // Professional details can be connected later.
+                final match = ProfessionalModel.sampleProfessionals.firstWhere(
+                  (p) => p.name.toLowerCase().contains(name.toLowerCase()),
+                  orElse: () => ProfessionalModel(
+                    id: 'custom_${name.hashCode}',
+                    name: name,
+                    category: service.contains('Plumb') ? 'Plumbing' : 'Electrical',
+                    specialty: service,
+                    rating: rating,
+                    reviewCount: 95,
+                    trustScore: trustScore,
+                    completedRepairs: 120,
+                    distance: distance,
+                    latitude: 28.6139,
+                    longitude: 77.2090,
+                    phoneNumber: '+91 98112 34567',
+                    address: 'Local Service Partner',
+                    experienceYears: 6,
+                    pricingStartingAt: '₹299',
+                    aiReviewSummary:
+                        'AI verified for consistently meeting quality benchmarks and prompt home repair resolution.',
+                    isSaved: true,
+                  ),
+                );
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfessionalDetailsScreen(
+                      professional: match,
+                    ),
+                  ),
+                );
               },
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(
