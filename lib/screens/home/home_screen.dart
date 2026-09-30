@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_radius.dart';
 import '../diagnosis/diagnosis_screen.dart';
+import '../notifications/notifications_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -328,12 +329,10 @@ class _HomeScreenState extends State<HomeScreen> {
         _iconButton(
           icon: Icons.notifications_none_rounded,
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Notifications will be connected here.',
-                ),
-                behavior: SnackBarBehavior.floating,
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotificationsScreen(),
               ),
             );
           },
