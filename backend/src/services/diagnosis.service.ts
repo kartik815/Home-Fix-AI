@@ -1,9 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 import { DiagnosisResult } from "../models/diagnosis.model";
+import { DiagnosisAnswer, QuestionDecision } from "../models/diagnosis.session.model";
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
+
+const MODEL = "gemini-3.5-flash";
 
 const SYSTEM_PROMPT = `
 You are the AI diagnosis engine for HomePilot AI, a home-service
@@ -34,11 +37,9 @@ IMPORTANT RULES:
   diagnosis.
 - For safety-sensitive situations, assign an appropriate severity and
   urgency.
-- If the user's description is too vague, use category "unknown" and
-  explain what information is missing.
+- If the user's description is too vague, use category "unknown".
 - Keep symptoms concise and useful for later provider matching.
-- Do not recommend a specific provider. Provider matching is handled
-  separately by our backend.
+- Do not recommend a specific provider.
 `;
 
 const DIAGNOSIS_SCHEMA = {
@@ -174,6 +175,33 @@ const DIAGNOSIS_SCHEMA = {
   ],
 };
 
+const QUESTION_DECISION_SCHEMA = {
+  type: "object",
+
+  properties: {
+    isComplete: {
+      type: "boolean",
+    },
+
+    question: {
+      type: ["string", "null"],
+    },
+
+    questionPurpose: {
+      type: ["string", "null"],
+    },
+
+    updatedDiagnosis: DIAGNOSIS_SCHEMA,
+  },
+
+  required: [
+    "isComplete",
+    "question",
+    "questionPurpose",
+    "updatedDiagnosis",
+  ],
+};
+
 export async function analyzeProblem(
   problem: string
 ): Promise<DiagnosisResult> {
@@ -185,7 +213,7 @@ export async function analyzeProblem(
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
+      model: MODEL,
 
       contents: [
         {
@@ -212,11 +240,127 @@ ${cleanedProblem}`,
       throw new Error("Gemini returned an empty response.");
     }
 
-    const result = JSON.parse(response.text) as DiagnosisResult;
-
-    return result;
+    return JSON.parse(response.text) as DiagnosisResult;
   } catch (error) {
     console.error("Gemini diagnosis error:", error);
+    throw error;
+  }
+}
+
+export async function decideNextQuestion(
+  originalProblem: string,
+  currentDiagnosis: DiagnosisResult,
+  answers: DiagnosisAnswer[],
+  askedQuestions: string[]
+): Promise<QuestionDecision> {
+  const answerHistory =
+    answers.length === 0
+      ? "No questions have been answered yet."
+      : answers
+          .map(
+            (item, index) =>
+              `${index + 1}. Question: ${item.question}\nAnswer: ${item.answer}`
+          )
+          .join("\n\n");
+
+  const previousQuestions =
+    askedQuestions.length === 0
+      ? "No questions have been asked yet."
+      : askedQuestions
+          .map((question, index) => `${index + 1}. ${question}`)
+          .join("\n");
+
+  const prompt = `
+You are continuing a HomePilot AI diagnosis session.
+
+The goal is NOT to perform a definitive medical, electrical, structural,
+or mechanical diagnosis.
+
+The goal is to collect enough useful information to identify:
+
+- the correct general service
+- the relevant professional skills
+- useful expertise for provider matching
+
+The user originally said:
+
+"${originalProblem}"
+
+CURRENT DIAGNOSIS:
+
+${JSON.stringify(currentDiagnosis, null, 2)}
+
+QUESTIONS ALREADY ASKED:
+
+${previousQuestions}
+
+USER ANSWERS:
+
+${answerHistory}
+
+YOUR TASK:
+
+Decide whether we have enough information to identify the appropriate
+type of professional and useful skills.
+
+If important information is still missing:
+
+1. Set isComplete to false.
+2. Ask exactly ONE question.
+3. Make the question natural and easy for a normal homeowner to answer.
+4. Ask only for information that materially helps identify the correct
+   professional.
+5. Do not repeat a previous question.
+6. Update the diagnosis using the information already provided.
+7. Set questionPurpose to briefly explain why this question matters.
+
+If we already have enough information:
+
+1. Set isComplete to true.
+2. Set question to null.
+3. Set questionPurpose to null.
+4. Update the diagnosis with all useful information collected.
+
+IMPORTANT:
+
+- Do not ask unnecessary questions.
+- Prefer specific questions over generic questions.
+- Do not ask multiple questions in one question.
+- Do not ask the user to perform dangerous electrical, gas, structural,
+  or mechanical procedures.
+- Do not claim that a particular component has definitely failed.
+- The system should normally finish within 3-6 questions.
+- If the diagnosis is already sufficiently specific, finish early.
+`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL,
+
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: QUESTION_DECISION_SCHEMA,
+      },
+    });
+
+    if (!response.text) {
+      throw new Error("Gemini returned an empty question decision.");
+    }
+
+    return JSON.parse(response.text) as QuestionDecision;
+  } catch (error) {
+    console.error("Gemini question decision error:", error);
     throw error;
   }
 }
