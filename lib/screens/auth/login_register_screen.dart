@@ -201,10 +201,7 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
   }
 
   void _onContinueAsGuest() {
-    // TODO: navigate to HomeScreen in guest mode.
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Continuing as guest')));
+    Navigator.of(context).pushReplacementNamed('/home');
   }
 
   @override
