@@ -219,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             _buildHomeContent(),
             const SearchHistoryScreen(showBackButton: false),
-            const SavedProfessionalsScreen(),
+            const SavedProfessionalsScreen(showBackButton: false),
             const ProfileScreen(showBackButton: false),
           ],
         ),
@@ -1075,7 +1075,7 @@ class _HomeScreenState extends State<HomeScreen> {
         border: Border(
           top: BorderSide(
             color: AppColors.border
-                .withOpacity(0.35),
+                .withValues(alpha: 0.35),
           ),
         ),
       ),
@@ -1156,7 +1156,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: selected
               ? AppColors.primary
-                  .withOpacity(0.12)
+                  .withValues(alpha: 0.12)
               : Colors.transparent,
 
           borderRadius:

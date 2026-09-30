@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../models/search_history_model.dart';
 import '../diagnosis/diagnosis_screen.dart';
 import '../maps/nearby_professionals_map_screen.dart';
@@ -182,17 +183,17 @@ class _SearchHistoryScreenState extends State<SearchHistoryScreen> {
         centerTitle: true,
         leading: widget.showBackButton
             ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: AppColors.textPrimary,
+                  size: 20,
+                ),
                 onPressed: () => Navigator.pop(context),
               )
             : null,
         title: const Text(
           'Search History',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.title,
         ),
         actions: [
           if (_items.isNotEmpty)
