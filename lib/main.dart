@@ -25,6 +25,7 @@ class HomePilotOnboardingApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'HomePilot AI',
+      color: AppColors.background,
       theme: AppTheme.darkTheme,
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),

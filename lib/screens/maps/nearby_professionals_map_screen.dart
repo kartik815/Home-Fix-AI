@@ -411,6 +411,7 @@ class _NearbyProfessionalsMapScreenState
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.card,
+      barrierColor: Colors.black54,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),

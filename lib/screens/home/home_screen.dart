@@ -269,7 +269,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Recent Searches',
                   'View all',
                   onTap: () {
-                    setState(() => _selectedIndex = 1);
+                    if (_selectedIndex != 1) {
+                      setState(() => _selectedIndex = 1);
+                    }
                   },
                 ),
 
@@ -356,9 +358,11 @@ class _HomeScreenState extends State<HomeScreen> {
         _iconButton(
           icon: Icons.person_outline_rounded,
           onTap: () {
-            setState(() {
-              _selectedIndex = 3;
-            });
+            if (_selectedIndex != 3) {
+              setState(() {
+                _selectedIndex = 3;
+              });
+            }
           },
         ),
       ],
@@ -1135,9 +1139,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedIndex = index;
-        });
+        if (_selectedIndex != index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        }
       },
 
       behavior:
