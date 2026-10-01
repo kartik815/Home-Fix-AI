@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -25,7 +26,8 @@ class _NearbyProfessionalsMapScreenState
     extends State<NearbyProfessionalsMapScreen> {
   // Map Controller
   GoogleMapController? _mapController;
-  final LatLng _initialUserLocation = const LatLng(28.6139, 77.2090);
+  LatLng _userLocation = const LatLng(28.6139, 77.2090);
+  bool _isLoadingLocation = false;
 
   // Filter State
   late String _selectedCategory;
@@ -69,6 +71,50 @@ class _NearbyProfessionalsMapScreenState
   void initState() {
     super.initState();
     _selectedCategory = widget.category ?? 'All';
+    _fetchLiveLocation();
+  }
+
+  Future<void> _fetchLiveLocation() async {
+    setState(() => _isLoadingLocation = true);
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) setState(() => _isLoadingLocation = false);
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) setState(() => _isLoadingLocation = false);
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) setState(() => _isLoadingLocation = false);
+        return;
+      }
+
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+
+      if (mounted) {
+        setState(() {
+          _userLocation = LatLng(pos.latitude, pos.longitude);
+          _isLoadingLocation = false;
+        });
+        _mapController?.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: _userLocation, zoom: 14.5),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingLocation = false);
+    }
   }
 
   @override
@@ -93,8 +139,8 @@ class _NearbyProfessionalsMapScreenState
     markers.add(
       Marker(
         markerId: const MarkerId('user_location'),
-        position: _initialUserLocation,
-        infoWindow: const InfoWindow(title: 'Your Location (Home)'),
+        position: _userLocation,
+        infoWindow: const InfoWindow(title: 'Your Location'),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       ),
     );
@@ -139,7 +185,7 @@ class _NearbyProfessionalsMapScreenState
     return {
       Circle(
         circleId: const CircleId('search_radius'),
-        center: _initialUserLocation,
+        center: _userLocation,
         radius: radiusMeters,
         strokeWidth: 2,
         strokeColor: AppColors.primary.withValues(alpha: 0.6),
@@ -218,18 +264,9 @@ class _NearbyProfessionalsMapScreenState
                 child: Column(
                   children: [
                     _floatingBtn(
-                      icon: Icons.my_location_rounded,
+                      icon: _isLoadingLocation ? Icons.hourglass_top_rounded : Icons.my_location_rounded,
                       tooltip: 'My Location',
-                      onTap: () {
-                        _mapController?.animateCamera(
-                          CameraUpdate.newCameraPosition(
-                            CameraPosition(
-                              target: _initialUserLocation,
-                              zoom: 14.5,
-                            ),
-                          ),
-                        );
-                      },
+                      onTap: _fetchLiveLocation,
                     ),
                     const SizedBox(height: 10),
                     _floatingBtn(
@@ -458,7 +495,7 @@ class _NearbyProfessionalsMapScreenState
     // GoogleMap provides a fallback canvas if map loading fails
     return GoogleMap(
       initialCameraPosition: CameraPosition(
-        target: _initialUserLocation,
+        target: _userLocation,
         zoom: 14.5,
       ),
       mapType: _currentMapType,
