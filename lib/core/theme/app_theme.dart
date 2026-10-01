@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
@@ -11,12 +12,49 @@ class AppTheme {
     brightness: Brightness.dark,
 
     scaffoldBackgroundColor: AppColors.background,
+    canvasColor: AppColors.background,
+    cardColor: AppColors.card,
 
     colorScheme: const ColorScheme.dark(
       primary: AppColors.primary,
       secondary: AppColors.secondary,
       surface: AppColors.surface,
+      surfaceTint: Colors.transparent,
       error: AppColors.error,
+    ),
+
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.background,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: true,
+      iconTheme: IconThemeData(color: AppColors.textPrimary),
+      titleTextStyle: AppTextStyles.title,
+    ),
+
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: AppColors.card,
+      modalBackgroundColor: AppColors.card,
+      surfaceTintColor: Colors.transparent,
+      modalBarrierColor: Colors.black54,
+    ),
+
+    dialogTheme: const DialogThemeData(
+      backgroundColor: AppColors.card,
+      surfaceTintColor: Colors.transparent,
+      barrierColor: Colors.black54,
+    ),
+
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.fuchsia: CupertinoPageTransitionsBuilder(),
+      },
     ),
 
     textTheme: const TextTheme(
@@ -57,7 +95,8 @@ class AppTheme {
 
     cardTheme: CardThemeData(
       color: AppColors.card,
-      elevation: 3,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),

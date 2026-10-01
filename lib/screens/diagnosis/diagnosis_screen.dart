@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_radius.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../maps/nearby_professionals_map_screen.dart';
 
 class DiagnosisScreen extends StatelessWidget {
   final String problem;
@@ -145,7 +145,7 @@ class DiagnosisScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              _buildFindProfessionalsButton(context),
+              _buildFindProfessionalsButton(context, diagnosis),
             ],
           ),
         ),
@@ -468,16 +468,33 @@ class DiagnosisScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFindProfessionalsButton(BuildContext context) {
+  Widget _buildFindProfessionalsButton(
+    BuildContext context,
+    Map<String, dynamic> diagnosis,
+  ) {
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton.icon(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Nearby Professionals page will be connected next.',
+          String category = 'All';
+          final diagText = (diagnosis['diagnosis'] as String? ?? '').toLowerCase();
+          if (diagText.contains('ac')) {
+            category = 'AC Repair';
+          } else if (diagText.contains('plumb')) {
+            category = 'Plumbing';
+          } else if (diagText.contains('electr')) {
+            category = 'Electrical';
+          } else {
+            category = 'Appliances';
+          }
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NearbyProfessionalsMapScreen(
+                category: category,
+                initialProblem: problem,
               ),
             ),
           );

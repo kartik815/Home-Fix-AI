@@ -5,7 +5,10 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_radius.dart';
 import '../diagnosis/diagnosis_screen.dart';
+import '../history/search_history_screen.dart';
 import '../notifications/notifications_screen.dart';
+import '../profile/profile_screen.dart';
+import '../saved_professionals/saved_professionals_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -210,65 +213,80 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(
-                20,
-                18,
-                20,
-                30,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate(
-                  [
-                    _buildTopBar(),
-
-                    const SizedBox(height: 30),
-
-                    _buildGreeting(),
-
-                    const SizedBox(height: 22),
-
-                    _buildProblemCard(),
-
-                    const SizedBox(height: 30),
-
-                    _buildSectionHeader(
-                      'Quick Services',
-                      'Choose a common problem',
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    _buildQuickServices(),
-
-                    const SizedBox(height: 30),
-
-                    _buildSectionHeader(
-                      'Recent Searches',
-                      'View all',
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    _buildRecentSearches(),
-
-                    const SizedBox(height: 26),
-
-                    _buildTrustBanner(),
-                  ],
-                ),
-              ),
-            ),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: [
+            _buildHomeContent(),
+            const SearchHistoryScreen(showBackButton: false),
+            const SavedProfessionalsScreen(showBackButton: false),
+            const ProfileScreen(showBackButton: false),
           ],
         ),
       ),
-
       bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildHomeContent() {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            18,
+            20,
+            30,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                _buildTopBar(),
+
+                const SizedBox(height: 30),
+
+                _buildGreeting(),
+
+                const SizedBox(height: 22),
+
+                _buildProblemCard(),
+
+                const SizedBox(height: 30),
+
+                _buildSectionHeader(
+                  'Quick Services',
+                  'Choose a common problem',
+                ),
+
+                const SizedBox(height: 14),
+
+                _buildQuickServices(),
+
+                const SizedBox(height: 30),
+
+                _buildSectionHeader(
+                  'Recent Searches',
+                  'View all',
+                  onTap: () {
+                    if (_selectedIndex != 1) {
+                      setState(() => _selectedIndex = 1);
+                    }
+                  },
+                ),
+
+                const SizedBox(height: 14),
+
+                _buildRecentSearches(),
+
+                const SizedBox(height: 26),
+
+                _buildTrustBanner(),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -329,17 +347,8 @@ class _HomeScreenState extends State<HomeScreen> {
         _iconButton(
           icon: Icons.notifications_none_rounded,
           onTap: () {
-            // ScaffoldMessenger.of(context).showSnackBar(
-            //   const SnackBar(
-            //     content: Text(
-            //       'Notifications will be connected here.',
-            //     ),
-            //     behavior: SnackBarBehavior.floating,
-            //   ),
-            // );
-
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (context) => const NotificationsScreen())
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
             );
           },
         ),
@@ -349,14 +358,11 @@ class _HomeScreenState extends State<HomeScreen> {
         _iconButton(
           icon: Icons.person_outline_rounded,
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Profile will be connected here.',
-                ),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            if (_selectedIndex != 3) {
+              setState(() {
+                _selectedIndex = 3;
+              });
+            }
           },
         ),
       ],
@@ -1073,7 +1079,7 @@ class _HomeScreenState extends State<HomeScreen> {
         border: Border(
           top: BorderSide(
             color: AppColors.border
-                .withOpacity(0.35),
+                .withValues(alpha: 0.35),
           ),
         ),
       ),
@@ -1133,21 +1139,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedIndex = index;
-        });
-
-        if (index != 0) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(
-            SnackBar(
-              content: Text(
-                '$label will be connected soon.',
-              ),
-              behavior:
-                  SnackBarBehavior.floating,
-            ),
-          );
+        if (_selectedIndex != index) {
+          setState(() {
+            _selectedIndex = index;
+          });
         }
       },
 
@@ -1167,7 +1162,7 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: selected
               ? AppColors.primary
-                  .withOpacity(0.12)
+                  .withValues(alpha: 0.12)
               : Colors.transparent,
 
           borderRadius:
