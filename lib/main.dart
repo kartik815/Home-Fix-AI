@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:test_app/screens/home/home_screen.dart';
+
 import 'firebase_options.dart';
 
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_radius.dart';
+
 import 'screens/auth/login_register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'screens/home/home_screen.dart';
 
-import 'firebase_options.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const HomePilotOnboardingApp());
 }
-
 class HomePilotOnboardingApp extends StatelessWidget {
   const HomePilotOnboardingApp({super.key});
 
@@ -28,8 +30,22 @@ class HomePilotOnboardingApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'HomePilot AI',
+      color: AppColors.background,
       theme: AppTheme.darkTheme,
-      home: const OnboardingScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (snapshot.hasData) {
+            return const HomeScreen(); // Logged in
+          }
+          return const OnboardingScreen(); // Not logged in
+        },
+      ),
       routes: {
         '/login': (_) => const LoginRegisterScreen(),
         '/home': (_) => const HomeScreen(),

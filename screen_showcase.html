@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomePilot AI - Screen Design & Consistency Showcase</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0f1015;
+      --card-bg: #181920;
+      --border: #282a36;
+      --app-bg: #1B1B1B;
+      --app-card: #242424;
+      --app-surface: #2A2A2A;
+      --app-primary: #6C63FF;
+      --app-secondary: #8B80FF;
+      --app-border: #3A3A3A;
+      --app-text: #FFFFFF;
+      --app-text-muted: #A0A0A0;
+      --app-success: #4CAF50;
+      --app-warning: #FFC107;
+      --app-error: #F44336;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 60px;
+    }
+
+    /* Top Banner */
+    header {
+      background: rgba(24, 25, 32, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--app-primary), var(--app-secondary));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 15px rgba(108, 99, 255, 0.4);
+    }
+
+    .brand-info h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-info p {
+      font-size: 12px;
+      color: var(--app-text-muted);
+    }
+
+    .tab-pills {
+      display: flex;
+      background: #111218;
+      padding: 4px;
+      border-radius: 30px;
+      border: 1px solid var(--border);
+      gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: none;
+      background: transparent;
+      color: var(--app-text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: var(--app-primary);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(108, 99, 255, 0.4);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: #fff;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 30px 24px;
+    }
+
+    /* Section Header */
+    .section-title-wrap {
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: var(--app-text-muted);
+      margin-top: 4px;
+    }
+
+    /* Badge Tags */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-kuldeep {
+      background: rgba(108, 99, 255, 0.2);
+      color: var(--app-secondary);
+      border: 1px solid rgba(108, 99, 255, 0.4);
+    }
+
+    .badge-team {
+      background: rgba(76, 175, 80, 0.2);
+      color: var(--app-success);
+      border: 1px solid rgba(76, 175, 80, 0.4);
+    }
+
+    /* VIEW 1: Interactive Phone Simulator */
+    .simulator-layout {
+      display: flex;
+      gap: 36px;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .phone-mockup {
+      width: 390px;
+      height: 790px;
+      background: var(--app-bg);
+      border-radius: 46px;
+      border: 10px solid #2d2e38;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    /* Notch / Dynamic Island */
+    .phone-notch {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 26px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+    }
+
+    .phone-notch .camera {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #111;
+      border: 1px solid #222;
+    }
+
+    .phone-notch .sensor {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #090a10;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 44px;
+      padding: 12px 26px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+      z-index: 90;
+    }
+
+    .status-bar-icons {
+      display: flex;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    /* Phone Screen Content */
+    .phone-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 18px 24px;
+      display: none;
+      scrollbar-width: none;
+    }
+
+    .phone-viewport::-webkit-scrollbar {
+      display: none;
+    }
+
+    .phone-viewport.active {
+      display: block;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Phone Bottom Navigation */
+    .phone-nav {
+      height: 68px;
+      background: #1e1e1e;
+      border-top: 1px solid #2c2c2c;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+      z-index: 80;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: var(--app-text-muted);
+      transition: all 0.2s;
+    }
+
+    .nav-item.active {
+      color: var(--app-primary);
+      background: rgba(108, 99, 255, 0.12);
+    }
+
+    .nav-item i {
+      font-size: 18px;
+    }
+
+    .nav-item span {
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* Simulator Controls Panel */
+    .controls-panel {
+      flex: 1;
+      max-width: 650px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+    }
+
+    .panel-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .screen-selector-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .screen-choice-btn {
+      background: #121319;
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      border-radius: 14px;
+      color: #fff;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .screen-choice-btn:hover {
+      border-color: var(--app-primary);
+      transform: translateY(-2px);
+    }
+
+    .screen-choice-btn.active {
+      background: rgba(108, 99, 255, 0.14);
+      border-color: var(--app-primary);
+    }
+
+    .screen-choice-btn .btn-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--app-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .screen-choice-btn.team .btn-icon {
+      background: rgba(76, 175, 80, 0.15);
+      color: var(--app-success);
+    }
+
+    .screen-choice-btn .info h4 {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .screen-choice-btn .info p {
+      font-size: 11px;
+      color: var(--app-text-muted);
+    }
+
+    /* Live Inspection Card */
+    .inspection-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .inspection-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #111218;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .inspection-item .label {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .inspection-item .val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--app-secondary);
+      background: rgba(108, 99, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    /* VIEW 2: Comparison Gallery */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 28px;
+    }
+
+    .gallery-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .gallery-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--app-primary);
+    }
+
+    .gallery-card-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .gallery-card-header h3 {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gallery-phone-frame {
+      background: var(--app-bg);
+      margin: 16px;
+      border-radius: 28px;
+      border: 6px solid #282a35;
+      height: 520px;
+      overflow-y: auto;
+      padding: 14px;
+      scrollbar-width: none;
+    }
+
+    .gallery-phone-frame::-webkit-scrollbar {
+      display: none;
+    }
+
+    .gallery-card-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--app-text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* VIEW 3: Design System Tokens Table */
+    .token-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card-bg);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .token-table th, .token-table td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .token-table th {
+      background: #121319;
+      font-size: 13px;
+      color: var(--app-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .token-table td {
+      font-size: 14px;
+    }
+
+    .color-preview-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* ============================================================
+       FLUTTER SCREEN IMPLEMENTATIONS (HTML/CSS EMULATION)
+       Matching AppColors, AppTextStyles, AppTheme exactly
+    ============================================================ */
+    
+    /* Top Bar */
+    .app-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .app-topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-logo-sq {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--app-primary), var(--app-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #fff;
+    }
+
+    .app-topbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .app-icon-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--app-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .app-icon-circle:hover {
+      background: rgba(108, 99, 255, 0.2);
+      color: var(--app-secondary);
+    }
+
+    /* Screen Headers */
+    .screen-appbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .screen-appbar h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .back-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--app-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Cards */
+    .app-card {
+      background: var(--app-card);
+      border-radius: 20px;
+      padding: 16px;
+      border: 1px solid var(--app-border);
+      margin-bottom: 16px;
+    }
+
+    .app-surface-box {
+      background: var(--app-surface);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    /* Input Field */
+    .app-input {
+      width: 100%;
+      background: var(--app-surface);
+      border: 1.5px solid var(--app-border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    /* Primary Button */
+    .app-btn-primary {
+      width: 100%;
+      height: 48px;
+      background: var(--app-primary);
+      color: #fff;
+      border: none;
+      border-radius: 15px;
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .app-btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .app-btn-outline {
+      width: 100%;
+      height: 44px;
+      background: transparent;
+      border: 1.5px solid var(--app-primary);
+      color: var(--app-secondary);
+      border-radius: 14px;
+      font-weight: 600;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    /* Chips */
+    .chip-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+
+    .chip-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .app-chip {
+      padding: 6px 14px;
+      background: var(--app-surface);
+      border: 1px solid var(--app-border);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--app-text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .app-chip.active {
+      background: var(--app-primary);
+      color: #fff;
+      border-color: var(--app-primary);
+    }
+
+    /* PROFILE SCREEN STYLES */
+    .profile-header-card {
+      background: var(--app-card);
+      border-radius: 22px;
+      padding: 20px;
+      border: 1px solid var(--app-border);
+      text-align: center;
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .profile-avatar-wrap {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 12px;
+      position: relative;
+    }
+
+    .profile-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--app-primary), var(--app-secondary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(108, 99, 255, 0.4);
+    }
+
+    .avatar-edit-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--app-surface);
+      border: 2px solid var(--app-card);
+      color: var(--app-secondary);
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .profile-stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stat-pill {
+      background: var(--app-surface);
+      border: 1px solid var(--app-border);
+      border-radius: 14px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+
+    .stat-pill i {
+      color: var(--app-secondary);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .stat-pill .num {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-pill .lbl {
+      font-size: 10px;
+      color: var(--app-text-muted);
+    }
+
+    .menu-group {
+      background: var(--app-card);
+      border-radius: 18px;
+      border: 1px solid var(--app-border);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .menu-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .menu-row:last-child {
+      border-bottom: none;
+    }
+
+    .menu-row:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .menu-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .menu-icon-box {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(108, 99, 255, 0.14);
+      color: var(--app-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .menu-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .menu-sub {
+      font-size: 10.5px;
+      color: var(--app-text-muted);
+    }
+
+    .menu-arrow {
+      color: var(--app-text-muted);
+      font-size: 11px;
+    }
+
+    /* SETTINGS SCREEN STYLES */
+    .settings-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--app-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin: 14px 4px 6px;
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .switch-row:last-child {
+      border-bottom: none;
+    }
+
+    .switch-ui {
+      width: 44px;
+      height: 24px;
+      background: var(--app-primary);
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .switch-ui.off {
+      background: #444;
+    }
+
+    .switch-ui::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 18px;
+      height: 18px;
+      background: #fff;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    .switch-ui.off::after {
+      right: 23px;
+    }
+
+    /* SEARCH HISTORY STYLES */
+    .history-card {
+      background: var(--app-card);
+      border-radius: 18px;
+      border: 1px solid var(--app-border);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .history-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .history-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(108, 99, 255, 0.15);
+      color: var(--app-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .history-issue-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.3;
+    }
+
+    .urgency-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .urgency-high {
+      background: rgba(244, 67, 54, 0.15);
+      color: var(--app-error);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+    }
+
+    .urgency-medium {
+      background: rgba(255, 193, 7, 0.15);
+      color: var(--app-warning);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    /* Modal Sheet Preview */
+    .mock-modal-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 95;
+      display: none;
+      height: 100%;
+      align-items: flex-end;
+    }
+
+    .mock-modal-overlay.active {
+      display: flex;
+    }
+
+    .mock-sheet {
+      width: 100%;
+      background: var(--app-card);
+      border-radius: 24px 24px 0 0;
+      padding: 16px 18px 24px;
+      border-top: 1px solid var(--app-border);
+      animation: slideUp 0.25s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: #555;
+      border-radius: 2px;
+      margin: 0 auto 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">
+        <i class="fa-solid fa-screwdriver-wrench"></i>
+      </div>
+      <div class="brand-info">
+        <h1>HomePilot AI</h1>
+        <p>Interactive Screen Matching & Visual Consistency Audit</p>
+      </div>
+    </div>
+
+    <div class="tab-pills">
+      <button class="tab-btn active" onclick="switchView('simulator')">
+        <i class="fa-solid fa-mobile-screen"></i> Interactive Phone
+      </button>
+      <button class="tab-btn" onclick="switchView('gallery')">
+        <i class="fa-solid fa-table-columns"></i> Side-by-Side Gallery
+      </button>
+      <button class="tab-btn" onclick="switchView('tokens')">
+        <i class="fa-solid fa-swatchbook"></i> Design Token Audit
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ============================================================
+         VIEW 1: INTERACTIVE PHONE SIMULATOR
+    ============================================================ -->
+    <section id="view-simulator">
+      <div class="section-title-wrap">
+        <h2 class="section-title">
+          <i class="fa-solid fa-fingerprint" style="color: var(--app-primary);"></i>
+          Live Interactive Mobile Simulator
+        </h2>
+        <p class="section-subtitle">
+          Test and compare your newly built screens (Profile, Settings, History) directly with your teammates' baseline screens.
+        </p>
+      </div>
+
+      <div class="simulator-layout">
+        <!-- Phone Device Frame -->
+        <div class="phone-mockup">
+          <!-- Dynamic Island Notch -->
+          <div class="phone-notch">
+            <div class="sensor"></div>
+            <div class="camera"></div>
+          </div>
+
+          <!-- Status Bar -->
+          <div class="status-bar">
+            <span>9:41</span>
+            <div class="status-bar-icons">
+              <i class="fa-solid fa-signal"></i>
+              <i class="fa-solid fa-wifi"></i>
+              <i class="fa-solid fa-battery-full"></i>
+            </div>
+          </div>
+
+          <!-- ================= SCREEN: PROFILE (KULDEEP) ================= -->
+          <div id="screen-profile" class="phone-viewport active">
+            <div class="screen-appbar">
+              <div></div>
+              <h2>My Profile</h2>
+              <div class="back-btn" onclick="showScreen('settings')">
+                <i class="fa-solid fa-gear"></i>
+              </div>
+            </div>
+
+            <!-- Profile Header Card -->
+            <div class="profile-header-card">
+              <div class="profile-avatar-wrap">
+                <div class="profile-avatar">K</div>
+                <div class="avatar-edit-badge"><i class="fa-solid fa-pen"></i></div>
+              </div>
+              <h3 style="font-size: 18px; font-weight: 800;">Kuldeep Devarasetty</h3>
+              <p style="font-size: 12px; color: var(--app-text-muted); margin-top: 2px;">kuldeep@homepilot.ai</p>
+              
+              <div style="margin-top: 10px;">
+                <span class="badge" style="background: rgba(76, 175, 80, 0.15); color: var(--app-success); border: 1px solid rgba(76, 175, 80, 0.4);">
+                  <i class="fa-solid fa-circle-check"></i> Verified Homeowner
+                </span>
+              </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="profile-stats-row">
+              <div class="stat-pill">
+                <i class="fa-solid fa-brain"></i>
+                <div class="num">14</div>
+                <div class="lbl">Diagnoses</div>
+              </div>
+              <div class="stat-pill" onclick="showScreen('saved')">
+                <i class="fa-solid fa-bookmark"></i>
+                <div class="num">3</div>
+                <div class="lbl">Saved Pros</div>
+              </div>
+              <div class="stat-pill" onclick="openAddressModal()">
+                <i class="fa-solid fa-location-dot"></i>
+                <div class="num">2</div>
+                <div class="lbl">Locations</div>
+              </div>
+            </div>
+
+            <!-- Group 1: Account -->
+            <div class="settings-section-title">Account Information</div>
+            <div class="menu-group">
+              <div class="menu-row" onclick="openAddressModal()">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-map-pin"></i></div>
+                  <div>
+                    <div class="menu-title">My Addresses</div>
+                    <div class="menu-sub">2 saved locations</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+              <div class="menu-row" onclick="showScreen('saved')">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-regular fa-bookmark"></i></div>
+                  <div>
+                    <div class="menu-title">Saved Professionals</div>
+                    <div class="menu-sub">Quick technician access</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+              <div class="menu-row" onclick="showScreen('history')">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                  <div>
+                    <div class="menu-title">Search & Diagnosis History</div>
+                    <div class="menu-sub">Past home estimates</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+            </div>
+
+            <!-- Group 2: Preferences -->
+            <div class="settings-section-title">App Preferences</div>
+            <div class="menu-group">
+              <div class="menu-row" onclick="showScreen('notifications')">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-regular fa-bell"></i></div>
+                  <div>
+                    <div class="menu-title">Notifications</div>
+                    <div class="menu-sub">Diagnosis updates & reminders</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+              <div class="menu-row" onclick="showScreen('settings')">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-sliders"></i></div>
+                  <div>
+                    <div class="menu-title">App Settings</div>
+                    <div class="menu-sub">Theme, location & security</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+            </div>
+
+            <!-- Group 3: Support -->
+            <div class="settings-section-title">Support & System</div>
+            <div class="menu-group">
+              <div class="menu-row" onclick="openSupportModal()">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-regular fa-circle-question"></i></div>
+                  <div>
+                    <div class="menu-title">Help & Customer Support</div>
+                    <div class="menu-sub">FAQs & helpline assistance</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+            </div>
+
+            <!-- Logout Button -->
+            <button class="app-btn-outline" style="border-color: rgba(244, 67, 54, 0.4); color: var(--app-error); margin-top: 10px;" onclick="openLogoutModal()">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Log Out
+            </button>
+            <p style="text-align: center; font-size: 10px; color: #666; margin-top: 12px;">HomePilot AI • Version 1.0.0 (Build 1)</p>
+          </div>
+
+          <!-- ================= SCREEN: SETTINGS (KULDEEP) ================= -->
+          <div id="screen-settings" class="phone-viewport">
+            <div class="screen-appbar">
+              <div class="back-btn" onclick="showScreen('profile')">
+                <i class="fa-solid fa-chevron-left"></i>
+              </div>
+              <h2>Settings</h2>
+              <div style="width: 34px;"></div>
+            </div>
+
+            <div class="settings-section-title">General</div>
+            <div class="menu-group">
+              <div class="menu-row">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-palette"></i></div>
+                  <div>
+                    <div class="menu-title">App Theme</div>
+                    <div class="menu-sub">Dark Mode (Default)</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+              <div class="menu-row">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-globe"></i></div>
+                  <div>
+                    <div class="menu-title">Language</div>
+                    <div class="menu-sub">English (US)</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+            </div>
+
+            <div class="settings-section-title">Notifications</div>
+            <div class="menu-group">
+              <div class="switch-row">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-bell"></i></div>
+                  <div>
+                    <div class="menu-title">Push Notifications</div>
+                    <div class="menu-sub">Real-time diagnosis alerts</div>
+                  </div>
+                </div>
+                <div class="switch-ui" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="switch-row">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-bolt"></i></div>
+                  <div>
+                    <div class="menu-title">Cost Estimation Alerts</div>
+                    <div class="menu-sub">Updates on repair rates</div>
+                  </div>
+                </div>
+                <div class="switch-ui" onclick="this.classList.toggle('off')"></div>
+              </div>
+            </div>
+
+            <div class="settings-section-title">Location & Proximity</div>
+            <div class="menu-group">
+              <div class="switch-row">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-location-dot"></i></div>
+                  <div>
+                    <div class="menu-title">Location Services</div>
+                    <div class="menu-sub">Nearby technician detection</div>
+                  </div>
+                </div>
+                <div class="switch-ui" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="menu-row">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-bullseye"></i></div>
+                  <div>
+                    <div class="menu-title">Default Search Radius</div>
+                    <div class="menu-sub">5 km (Optimal)</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+            </div>
+
+            <div class="settings-section-title">Security & Storage</div>
+            <div class="menu-group">
+              <div class="switch-row">
+                <div class="menu-left">
+                  <div class="menu-icon-box"><i class="fa-solid fa-fingerprint"></i></div>
+                  <div>
+                    <div class="menu-title">Biometric App Lock</div>
+                    <div class="menu-sub">Fingerprint or Face ID</div>
+                  </div>
+                </div>
+                <div class="switch-ui off" onclick="this.classList.toggle('off')"></div>
+              </div>
+              <div class="menu-row" onclick="alert('Temporary cache (18.4 MB) cleared successfully.')">
+                <div class="menu-left">
+                  <div class="menu-icon-box" style="background: rgba(255, 193, 7, 0.15); color: var(--app-warning);"><i class="fa-solid fa-broom"></i></div>
+                  <div>
+                    <div class="menu-title">Clear Temporary Cache</div>
+                    <div class="menu-sub">Free up 18.4 MB</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-chevron-right menu-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- ================= SCREEN: SEARCH HISTORY (KULDEEP) ================= -->
+          <div id="screen-history" class="phone-viewport">
+            <div class="screen-appbar">
+              <div class="back-btn" onclick="showScreen('home')">
+                <i class="fa-solid fa-chevron-left"></i>
+              </div>
+              <h2>Search History</h2>
+              <div class="back-btn" onclick="alert('Clear All History confirmation modal triggered')">
+                <i class="fa-solid fa-trash-can" style="color: var(--app-text-muted);"></i>
+              </div>
+            </div>
+
+            <!-- Search input -->
+            <div class="app-input">
+              <i class="fa-solid fa-magnifying-glass" style="color: var(--app-text-muted);"></i>
+              <input type="text" placeholder="Search past diagnoses..." style="background:transparent; border:none; color:#fff; outline:none; font-size:12px; width:100%;">
+            </div>
+
+            <!-- Category filter chips -->
+            <div class="chip-scroll">
+              <div class="app-chip active">All</div>
+              <div class="app-chip">AC Repair</div>
+              <div class="app-chip">Plumbing</div>
+              <div class="app-chip">Electrical</div>
+              <div class="app-chip">Appliances</div>
+            </div>
+
+            <!-- History Items -->
+            <div class="history-card">
+              <div class="history-top">
+                <div class="history-icon-box"><i class="fa-solid fa-snowflake"></i></div>
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                    <span style="font-size: 10.5px; color: var(--app-secondary); font-weight: 700;">AC REPAIR</span>
+                    <span style="font-size: 10px; color: var(--app-text-muted);">2 hours ago</span>
+                  </div>
+                  <div class="history-issue-title">AC is running but not cooling properly</div>
+                </div>
+              </div>
+              <div class="app-surface-box" style="margin-bottom: 12px; font-size: 11.5px; color: var(--app-text-muted);">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                  <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--app-primary);"></i>
+                  <span style="color:#ddd;">Dirty filter or low Freon cooling pressure</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span class="urgency-badge urgency-medium">Medium Urgency</span>
+                  <span style="color: #fff; font-weight: 700;">₹800 - ₹2,500</span>
+                </div>
+              </div>
+              <button class="app-btn-outline" style="height: 36px; font-size: 11.5px;" onclick="showScreen('diagnosis')">
+                View AI Diagnosis
+              </button>
+            </div>
+
+            <div class="history-card">
+              <div class="history-top">
+                <div class="history-icon-box"><i class="fa-solid fa-faucet-drip"></i></div>
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                    <span style="font-size: 10.5px; color: var(--app-secondary); font-weight: 700;">PLUMBING</span>
+                    <span style="font-size: 10px; color: var(--app-text-muted);">Yesterday</span>
+                  </div>
+                  <div class="history-issue-title">Kitchen sink pipe is leaking water continuously</div>
+                </div>
+              </div>
+              <div class="app-surface-box" style="margin-bottom: 12px; font-size: 11.5px; color: var(--app-text-muted);">
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                  <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--app-primary);"></i>
+                  <span style="color:#ddd;">Damaged P-trap slip-nut gasket</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span class="urgency-badge urgency-high">High Urgency</span>
+                  <span style="color: #fff; font-weight: 700;">₹500 - ₹1,500</span>
+                </div>
+              </div>
+              <button class="app-btn-outline" style="height: 36px; font-size: 11.5px;" onclick="showScreen('diagnosis')">
+                View AI Diagnosis
+              </button>
+            </div>
+          </div>
+
+          <!-- ================= SCREEN: HOME (TEAMMATE'S BASELINE) ================= -->
+          <div id="screen-home" class="phone-viewport">
+            <div class="app-topbar">
+              <div class="app-topbar-brand">
+                <div class="app-logo-sq"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                <div>
+                  <h3 style="font-size: 16px; font-weight: 800;">HomePilot AI</h3>
+                  <p style="font-size: 11px; color: var(--app-text-muted);">Your smart home assistant</p>
+                </div>
+              </div>
+              <div class="app-topbar-actions">
+                <div class="app-icon-circle" onclick="showScreen('notifications')"><i class="fa-regular fa-bell"></i></div>
+                <div class="app-icon-circle" onclick="showScreen('profile')"><i class="fa-regular fa-user"></i></div>
+              </div>
+            </div>
+
+            <!-- Greeting -->
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 13px; color: var(--app-text-muted);">👋 Good Evening,</span>
+              <h2 style="font-size: 24px; font-weight: 800; margin-top: 2px;">Kuldeep</h2>
+              <p style="font-size: 13px; color: var(--app-text-muted); margin-top: 2px;">What's happening at home today?</p>
+            </div>
+
+            <!-- Problem Card -->
+            <div class="app-card">
+              <div style="font-size: 12px; color: var(--app-text-muted); margin-bottom: 8px;">Describe your issue:</div>
+              <div class="app-input" style="height: 60px; align-items: flex-start;">
+                <i class="fa-solid fa-pencil" style="color: var(--app-text-muted); margin-top: 2px;"></i>
+                <span style="font-size: 12.5px; color: #fff;">My AC is running but not cooling</span>
+              </div>
+              <button class="app-btn-primary" onclick="showScreen('diagnosis')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Diagnose My Problem
+              </button>
+            </div>
+
+            <!-- Quick Services Section -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 18px 0 10px;">
+              <span style="font-size: 15px; font-weight: 700;">Quick Services</span>
+              <span style="font-size: 11px; color: var(--app-primary); font-weight: 600;">Choose common</span>
+            </div>
+            <div class="chip-scroll">
+              <div class="stat-pill" style="min-width: 95px; cursor: pointer;" onclick="showScreen('diagnosis')">
+                <i class="fa-solid fa-bolt" style="font-size: 18px;"></i>
+                <div class="num" style="font-size: 12px; margin-top: 4px;">Electrical</div>
+                <div class="lbl">Fans & lights</div>
+              </div>
+              <div class="stat-pill" style="min-width: 95px; cursor: pointer;" onclick="showScreen('diagnosis')">
+                <i class="fa-solid fa-faucet-drip" style="font-size: 18px;"></i>
+                <div class="num" style="font-size: 12px; margin-top: 4px;">Plumbing</div>
+                <div class="lbl">Leaks & taps</div>
+              </div>
+              <div class="stat-pill" style="min-width: 95px; cursor: pointer;" onclick="showScreen('diagnosis')">
+                <i class="fa-solid fa-snowflake" style="font-size: 18px;"></i>
+                <div class="num" style="font-size: 12px; margin-top: 4px;">AC Repair</div>
+                <div class="lbl">Cooling check</div>
+              </div>
+            </div>
+
+            <!-- Recent Searches Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 18px 0 10px;">
+              <span style="font-size: 15px; font-weight: 700;">Recent Searches</span>
+              <span style="font-size: 11px; color: var(--app-primary); font-weight: 600; cursor: pointer;" onclick="showScreen('history')">View all &rarr;</span>
+            </div>
+            <div class="app-surface-box" style="display: flex; align-items: center; justify-content: space-between;" onclick="showScreen('history')">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-clock-rotate-left" style="color: var(--app-secondary);"></i>
+                <span style="font-size: 13px; font-weight: 600;">AC is not cooling properly</span>
+              </div>
+              <i class="fa-solid fa-chevron-right" style="font-size: 11px; color: #666;"></i>
+            </div>
+          </div>
+
+          <!-- ================= SCREEN: DIAGNOSIS (TEAMMATE'S BASELINE) ================= -->
+          <div id="screen-diagnosis" class="phone-viewport">
+            <div class="screen-appbar">
+              <div class="back-btn" onclick="showScreen('home')">
+                <i class="fa-solid fa-chevron-left"></i>
+              </div>
+              <h2>AI Diagnosis</h2>
+              <div style="width: 34px;"></div>
+            </div>
+
+            <div style="margin-bottom: 16px;">
+              <h3 style="font-size: 20px; font-weight: 800;">Here's what we found</h3>
+              <p style="font-size: 12px; color: var(--app-text-muted);">Our AI analyzed your described issue.</p>
+            </div>
+
+            <div class="app-card" style="background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), var(--app-card)); border-color: rgba(108, 99, 255, 0.35);">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--app-secondary);"></i>
+                <span style="font-size: 16px; font-weight: 800;">AC cooling problem</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+                <span class="urgency-badge urgency-medium">Medium Urgency</span>
+                <span style="font-size: 16px; font-weight: 800; color: #fff;">₹800 - ₹2,500</span>
+              </div>
+            </div>
+
+            <div class="settings-section-title">Possible Causes</div>
+            <div class="app-card" style="padding: 12px 16px;">
+              <ul style="padding-left: 18px; font-size: 12.5px; color: var(--app-text-muted); line-height: 1.8;">
+                <li>Dirty or blocked air filter</li>
+                <li>Low refrigerant level (Freon gas)</li>
+                <li>Dirty condenser coils outside</li>
+                <li>Compressor capacitor fault</li>
+              </ul>
+            </div>
+
+            <div class="settings-section-title">Suggested Solution</div>
+            <div class="app-card" style="font-size: 12.5px; color: var(--app-text-muted); line-height: 1.5;">
+              Clean the front mesh air filters first. If problem persists, request a certified technician to inspect refrigerant pressure.
+            </div>
+
+            <button class="app-btn-primary" style="margin-top: 10px;" onclick="showScreen('saved')">
+              <i class="fa-solid fa-location-dot"></i> Find Nearby Professionals
+            </button>
+          </div>
+
+          <!-- ================= SCREEN: SAVED PROFESSIONALS (TEAMMATE'S BASELINE) ================= -->
+          <div id="screen-saved" class="phone-viewport">
+            <div class="screen-appbar">
+              <div class="back-btn" onclick="showScreen('home')">
+                <i class="fa-solid fa-chevron-left"></i>
+              </div>
+              <h2>Saved Professionals</h2>
+              <div style="width: 34px;"></div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+              <p style="font-size: 12px; color: var(--app-text-muted);">Trusted technicians you bookmarked for repairs</p>
+            </div>
+
+            <div class="app-card">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div style="display: flex; gap: 12px;">
+                  <div class="history-icon-box" style="width: 44px; height: 44px; border-radius: 14px;">
+                    <i class="fa-solid fa-wrench"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: 15px; font-weight: 700;">Sharma Electricals</h4>
+                    <p style="font-size: 11.5px; color: var(--app-text-muted);">Electrical & AC Repair</p>
+                  </div>
+                </div>
+                <i class="fa-solid fa-bookmark" style="color: var(--app-primary);"></i>
+              </div>
+              <div style="display: flex; gap: 14px; font-size: 11px; color: var(--app-text-muted); margin-bottom: 14px;">
+                <span><i class="fa-solid fa-star" style="color: var(--app-warning);"></i> 4.8</span>
+                <span><i class="fa-solid fa-location-dot" style="color: var(--app-secondary);"></i> 0.8 km</span>
+                <span><i class="fa-solid fa-shield-halved" style="color: var(--app-primary);"></i> Trust 92</span>
+              </div>
+              <button class="app-btn-outline" style="height: 38px; font-size: 12px;">View Professional Details</button>
+            </div>
+
+            <div class="app-card">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div style="display: flex; gap: 12px;">
+                  <div class="history-icon-box" style="width: 44px; height: 44px; border-radius: 14px;">
+                    <i class="fa-solid fa-faucet-drip"></i>
+                  </div>
+                  <div>
+                    <h4 style="font-size: 15px; font-weight: 700;">R.K. Quick Services</h4>
+                    <p style="font-size: 11.5px; color: var(--app-text-muted);">Plumbing & Drain Repairs</p>
+                  </div>
+                </div>
+                <i class="fa-solid fa-bookmark" style="color: var(--app-primary);"></i>
+              </div>
+              <div style="display: flex; gap: 14px; font-size: 11px; color: var(--app-text-muted); margin-bottom: 14px;">
+                <span><i class="fa-solid fa-star" style="color: var(--app-warning);"></i> 4.6</span>
+                <span><i class="fa-solid fa-location-dot" style="color: var(--app-secondary);"></i> 1.2 km</span>
+                <span><i class="fa-solid fa-shield-halved" style="color: var(--app-primary);"></i> Trust 88</span>
+              </div>
+              <button class="app-btn-outline" style="height: 38px; font-size: 12px;">View Professional Details</button>
+            </div>
+          </div>
+
+          <!-- ================= SCREEN: NOTIFICATIONS (TEAMMATE'S BASELINE) ================= -->
+          <div id="screen-notifications" class="phone-viewport">
+            <div class="screen-appbar">
+              <div class="back-btn" onclick="showScreen('home')">
+                <i class="fa-solid fa-chevron-left"></i>
+              </div>
+              <h2>Notifications</h2>
+              <div style="width: 34px;"></div>
+            </div>
+
+            <div class="app-surface-box" style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;">
+              <div class="history-icon-box" style="width: 36px; height: 36px; border-radius: 10px;">
+                <i class="fa-solid fa-bell"></i>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                  <span style="font-weight: 700; color: #fff;">Diagnosis Completed</span>
+                  <span style="color: var(--app-text-muted);">10m ago</span>
+                </div>
+                <p style="font-size: 11.5px; color: var(--app-text-muted);">Your AC cooling diagnosis is ready with cost estimates.</p>
+              </div>
+            </div>
+
+            <div class="app-surface-box" style="display: flex; gap: 12px; align-items: flex-start;">
+              <div class="history-icon-box" style="width: 36px; height: 36px; border-radius: 10px;">
+                <i class="fa-solid fa-tag"></i>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px;">
+                  <span style="font-weight: 700; color: #fff;">Partner Discount</span>
+                  <span style="color: var(--app-text-muted);">2h ago</span>
+                </div>
+                <p style="font-size: 11.5px; color: var(--app-text-muted);">Get 15% off first electrical wiring check with Sharma Electricals.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Navigation Bar (Dynamic state linked) -->
+          <div class="phone-nav">
+            <div id="nav-home" class="nav-item" onclick="showScreen('home')">
+              <i class="fa-solid fa-house"></i>
+              <span>Home</span>
+            </div>
+            <div id="nav-history" class="nav-item" onclick="showScreen('history')">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>History</span>
+            </div>
+            <div id="nav-saved" class="nav-item" onclick="showScreen('saved')">
+              <i class="fa-regular fa-bookmark"></i>
+              <span>Saved</span>
+            </div>
+            <div id="nav-profile" class="nav-item active" onclick="showScreen('profile')">
+              <i class="fa-regular fa-user"></i>
+              <span>Profile</span>
+            </div>
+          </div>
+
+          <!-- Modal Mock Overlay (Addresses) -->
+          <div id="modal-address" class="mock-modal-overlay" onclick="closeModals()">
+            <div class="mock-sheet" onclick="event.stopPropagation()">
+              <div class="sheet-handle"></div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 16px; font-weight: 800;">Saved Addresses</h3>
+                <span style="font-size: 12px; color: var(--app-primary); font-weight: 700; cursor: pointer;">+ Add New</span>
+              </div>
+              <div class="app-surface-box" style="border: 1px solid var(--app-primary); display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <i class="fa-solid fa-house" style="color: var(--app-secondary);"></i>
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700;">Home (Default)</div>
+                    <div style="font-size: 11px; color: var(--app-text-muted);">Flat 402, Palm Heights, Sector 62</div>
+                  </div>
+                </div>
+                <i class="fa-solid fa-circle-check" style="color: var(--app-primary);"></i>
+              </div>
+              <div class="app-surface-box" style="display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <i class="fa-solid fa-building" style="color: var(--app-secondary);"></i>
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700;">Office</div>
+                    <div style="font-size: 11px; color: var(--app-text-muted);">Tower B, Tech Park, Phase 2</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Mock Overlay (Support) -->
+          <div id="modal-support" class="mock-modal-overlay" onclick="closeModals()">
+            <div class="mock-sheet" onclick="event.stopPropagation()">
+              <div class="sheet-handle"></div>
+              <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 4px;">Help & Support</h3>
+              <p style="font-size: 12px; color: var(--app-text-muted); margin-bottom: 14px;">How can we assist you today?</p>
+              <div class="app-surface-box" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <i class="fa-solid fa-envelope" style="color: var(--app-primary);"></i>
+                <div>
+                  <div style="font-size: 13px; font-weight: 600;">support@homepilot.ai</div>
+                  <div style="font-size: 10px; color: var(--app-text-muted);">Email customer support</div>
+                </div>
+              </div>
+              <div class="app-surface-box" style="display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-phone" style="color: var(--app-primary);"></i>
+                <div>
+                  <div style="font-size: 13px; font-weight: 600;">+91 1800-419-FIXAI</div>
+                  <div style="font-size: 10px; color: var(--app-text-muted);">Toll-free 24/7 Helpline</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Mock Overlay (Logout) -->
+          <div id="modal-logout" class="mock-modal-overlay" onclick="closeModals()">
+            <div class="mock-sheet" onclick="event.stopPropagation()">
+              <div class="sheet-handle"></div>
+              <h3 style="font-size: 16px; font-weight: 800; color: var(--app-error); margin-bottom: 6px;">Log Out?</h3>
+              <p style="font-size: 12.5px; color: var(--app-text-muted); margin-bottom: 16px;">Are you sure you want to sign out from HomePilot AI?</p>
+              <div style="display: flex; gap: 10px;">
+                <button class="app-btn-outline" style="flex: 1; border-color: #555; color: #ccc;" onclick="closeModals()">Cancel</button>
+                <button class="app-btn-primary" style="flex: 1; background: var(--app-error);" onclick="alert('Firebase sign-out simulated! Redirecting to login.'); closeModals();">Log Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls & Screen Selector Sidebar -->
+        <div class="controls-panel">
+          <div class="panel-card">
+            <h3><i class="fa-solid fa-layer-group" style="color: var(--app-primary);"></i> Screen Switcher</h3>
+            <p style="font-size: 13px; color: var(--app-text-muted); margin-bottom: 16px;">
+              Click any button to switch the mobile device view above:
+            </p>
+
+            <div class="screen-selector-grid">
+              <!-- Kuldeep's screens -->
+              <div id="btn-profile" class="screen-choice-btn active" onclick="showScreen('profile')">
+                <div class="btn-icon"><i class="fa-regular fa-user"></i></div>
+                <div class="info">
+                  <h4>Profile Screen</h4>
+                  <p><span class="badge badge-kuldeep">Your Work</span></p>
+                </div>
+              </div>
+
+              <div id="btn-settings" class="screen-choice-btn" onclick="showScreen('settings')">
+                <div class="btn-icon"><i class="fa-solid fa-sliders"></i></div>
+                <div class="info">
+                  <h4>Settings Page</h4>
+                  <p><span class="badge badge-kuldeep">Your Work</span></p>
+                </div>
+              </div>
+
+              <div id="btn-history" class="screen-choice-btn" onclick="showScreen('history')">
+                <div class="btn-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="info">
+                  <h4>Search History</h4>
+                  <p><span class="badge badge-kuldeep">Your Work</span></p>
+                </div>
+              </div>
+
+              <!-- Teammates' screens -->
+              <div id="btn-home" class="screen-choice-btn team" onclick="showScreen('home')">
+                <div class="btn-icon"><i class="fa-solid fa-house"></i></div>
+                <div class="info">
+                  <h4>Home Dashboard</h4>
+                  <p><span class="badge badge-team">Teammate</span></p>
+                </div>
+              </div>
+
+              <div id="btn-diagnosis" class="screen-choice-btn team" onclick="showScreen('diagnosis')">
+                <div class="btn-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <div class="info">
+                  <h4>AI Diagnosis</h4>
+                  <p><span class="badge badge-team">Teammate</span></p>
+                </div>
+              </div>
+
+              <div id="btn-saved" class="screen-choice-btn team" onclick="showScreen('saved')">
+                <div class="btn-icon"><i class="fa-regular fa-bookmark"></i></div>
+                <div class="info">
+                  <h4>Saved Pros</h4>
+                  <p><span class="badge badge-team">Teammate</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matching Analysis Card -->
+          <div class="panel-card">
+            <h3><i class="fa-solid fa-circle-check" style="color: var(--app-success);"></i> Consistency Verification Checklist</h3>
+            <div class="inspection-list">
+              <div class="inspection-item">
+                <div class="label">
+                  <i class="fa-solid fa-circle-check" style="color: var(--app-success);"></i> Background Color Match
+                </div>
+                <div class="val">#1B1B1B (AppColors.background)</div>
+              </div>
+              <div class="inspection-item">
+                <div class="label">
+                  <i class="fa-solid fa-circle-check" style="color: var(--app-success);"></i> Card & Surface Radii
+                </div>
+                <div class="val">20px (Card) • 14px (Badges)</div>
+              </div>
+              <div class="inspection-item">
+                <div class="label">
+                  <i class="fa-solid fa-circle-check" style="color: var(--app-success);"></i> Brand Primary & Accent
+                </div>
+                <div class="val">#6C63FF & #8B80FF</div>
+              </div>
+              <div class="inspection-item">
+                <div class="label">
+                  <i class="fa-solid fa-circle-check" style="color: var(--app-success);"></i> Icon Container Containers
+                </div>
+                <div class="val">Rounded box with 12% tint</div>
+              </div>
+              <div class="inspection-item">
+                <div class="label">
+                  <i class="fa-solid fa-circle-check" style="color: var(--app-success);"></i> Flowchart Blueprint Spec
+                </div>
+                <div class="val">100% compliant with PDF Page 4</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         VIEW 2: SIDE-BY-SIDE GALLERY
+    ============================================================ -->
+    <section id="view-gallery" style="display: none;">
+      <div class="section-title-wrap">
+        <h2 class="section-title">
+          <i class="fa-solid fa-table-columns" style="color: var(--app-primary);"></i>
+          Side-by-Side Screen Comparison Gallery
+        </h2>
+        <p class="section-subtitle">
+          See all screens at a glance to compare visual weight, alignment, dark contrast, and font hierarchy.
+        </p>
+      </div>
+
+      <div class="gallery-grid">
+        <!-- 1. Profile Screen -->
+        <div class="gallery-card">
+          <div class="gallery-card-header">
+            <h3><i class="fa-regular fa-user" style="color: var(--app-primary);"></i> Profile Screen</h3>
+            <span class="badge badge-kuldeep">Your Work</span>
+          </div>
+          <div class="gallery-phone-frame">
+            <div style="text-align: center; margin-bottom: 14px;">
+              <div class="profile-avatar" style="width: 58px; height: 58px; font-size: 22px; margin: 0 auto 8px;">K</div>
+              <div style="font-size: 15px; font-weight: 800;">Kuldeep Devarasetty</div>
+              <div style="font-size: 11px; color: var(--app-text-muted);">kuldeep@homepilot.ai</div>
+            </div>
+            <div class="profile-stats-row" style="margin-bottom: 14px;">
+              <div class="stat-pill"><div class="num" style="font-size: 14px;">14</div><div class="lbl">Diagnoses</div></div>
+              <div class="stat-pill"><div class="num" style="font-size: 14px;">3</div><div class="lbl">Saved</div></div>
+              <div class="stat-pill"><div class="num" style="font-size: 14px;">2</div><div class="lbl">Places</div></div>
+            </div>
+            <div class="menu-group">
+              <div class="menu-row"><span class="menu-title">My Addresses</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+              <div class="menu-row"><span class="menu-title">Saved Pros</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+              <div class="menu-row"><span class="menu-title">Search History</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+            </div>
+            <div class="menu-group">
+              <div class="menu-row"><span class="menu-title">App Settings</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+              <div class="menu-row"><span class="menu-title">Help & Support</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+            </div>
+          </div>
+          <div class="gallery-card-footer">
+            <span>lib/screens/profile/profile_screen.dart</span>
+            <span style="color: var(--app-success);"><i class="fa-solid fa-check"></i> Perfect Match</span>
+          </div>
+        </div>
+
+        <!-- 2. Settings Screen -->
+        <div class="gallery-card">
+          <div class="gallery-card-header">
+            <h3><i class="fa-solid fa-sliders" style="color: var(--app-primary);"></i> Settings Page</h3>
+            <span class="badge badge-kuldeep">Your Work</span>
+          </div>
+          <div class="gallery-phone-frame">
+            <div class="settings-section-title">General</div>
+            <div class="menu-group">
+              <div class="menu-row"><span class="menu-title">App Theme: Dark</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+              <div class="menu-row"><span class="menu-title">Language: English</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+            </div>
+            <div class="settings-section-title">Notifications</div>
+            <div class="menu-group">
+              <div class="switch-row"><span class="menu-title">Push Alerts</span><div class="switch-ui"></div></div>
+              <div class="switch-row"><span class="menu-title">Diagnosis Updates</span><div class="switch-ui"></div></div>
+            </div>
+            <div class="settings-section-title">Location & Maps</div>
+            <div class="menu-group">
+              <div class="switch-row"><span class="menu-title">Location Services</span><div class="switch-ui"></div></div>
+              <div class="menu-row"><span class="menu-title">Radius: 5 km</span><i class="fa-solid fa-chevron-right menu-arrow"></i></div>
+            </div>
+          </div>
+          <div class="gallery-card-footer">
+            <span>lib/screens/settings/settings_screen.dart</span>
+            <span style="color: var(--app-success);"><i class="fa-solid fa-check"></i> Perfect Match</span>
+          </div>
+        </div>
+
+        <!-- 3. Search History Screen -->
+        <div class="gallery-card">
+          <div class="gallery-card-header">
+            <h3><i class="fa-solid fa-clock-rotate-left" style="color: var(--app-primary);"></i> Search History</h3>
+            <span class="badge badge-kuldeep">Your Work</span>
+          </div>
+          <div class="gallery-phone-frame">
+            <div class="chip-scroll">
+              <div class="app-chip active">All</div>
+              <div class="app-chip">AC Repair</div>
+              <div class="app-chip">Plumbing</div>
+            </div>
+            <div class="history-card" style="padding: 10px;">
+              <div style="font-size: 13px; font-weight: 700; color: #fff;">AC is not cooling properly</div>
+              <div style="font-size: 11px; color: var(--app-secondary); margin: 4px 0;">Dirty filter / Freon pressure</div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                <span class="urgency-badge urgency-medium">Medium</span>
+                <span style="font-weight: 700;">₹800 - ₹2,500</span>
+              </div>
+            </div>
+            <div class="history-card" style="padding: 10px;">
+              <div style="font-size: 13px; font-weight: 700; color: #fff;">Kitchen sink pipe is leaking</div>
+              <div style="font-size: 11px; color: var(--app-secondary); margin: 4px 0;">P-trap washer gasket</div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                <span class="urgency-badge urgency-high">High</span>
+                <span style="font-weight: 700;">₹500 - ₹1,500</span>
+              </div>
+            </div>
+          </div>
+          <div class="gallery-card-footer">
+            <span>lib/screens/history/search_history_screen.dart</span>
+            <span style="color: var(--app-success);"><i class="fa-solid fa-check"></i> Perfect Match</span>
+          </div>
+        </div>
+
+        <!-- 4. Home Screen (Teammate) -->
+        <div class="gallery-card">
+          <div class="gallery-card-header">
+            <h3><i class="fa-solid fa-house" style="color: var(--app-success);"></i> Home Dashboard</h3>
+            <span class="badge badge-team">Teammate</span>
+          </div>
+          <div class="gallery-phone-frame">
+            <div class="app-topbar">
+              <div class="app-topbar-brand">
+                <div class="app-logo-sq" style="width: 32px; height: 32px; font-size: 14px;"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                <div style="font-size: 13px; font-weight: 800;">HomePilot AI</div>
+              </div>
+            </div>
+            <div class="app-card" style="padding: 12px;">
+              <div style="font-size: 11px; color: var(--app-text-muted);">Describe home problem:</div>
+              <div class="app-input" style="padding: 8px 12px; font-size: 11px; margin: 8px 0;">AC is running but not cooling</div>
+              <button class="app-btn-primary" style="height: 38px; font-size: 12px;">Diagnose</button>
+            </div>
+            <div style="font-size: 13px; font-weight: 700; margin: 10px 0 6px;">Recent Searches</div>
+            <div class="app-surface-box" style="padding: 10px; font-size: 12px;">Kitchen sink pipe leaking</div>
+          </div>
+          <div class="gallery-card-footer">
+            <span>lib/screens/home/home_screen.dart</span>
+            <span>Teammate Baseline</span>
+          </div>
+        </div>
+
+        <!-- 5. AI Diagnosis (Teammate) -->
+        <div class="gallery-card">
+          <div class="gallery-card-header">
+            <h3><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--app-success);"></i> AI Diagnosis</h3>
+            <span class="badge badge-team">Teammate</span>
+          </div>
+          <div class="gallery-phone-frame">
+            <div class="app-card" style="background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), var(--app-card)); padding: 12px;">
+              <div style="font-size: 14px; font-weight: 800;">AC cooling problem</div>
+              <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                <span class="urgency-badge urgency-medium">Medium</span>
+                <span style="font-weight: 700;">₹800 - ₹2,500</span>
+              </div>
+            </div>
+            <div class="settings-section-title">Possible Causes</div>
+            <div class="app-surface-box" style="font-size: 11.5px; line-height: 1.6;">
+              • Dirty air filter<br>• Low Freon level<br>• Condenser coil issue
+            </div>
+          </div>
+          <div class="gallery-card-footer">
+            <span>lib/screens/diagnosis/diagnosis_screen.dart</span>
+            <span>Teammate Baseline</span>
+          </div>
+        </div>
+
+        <!-- 6. Saved Professionals (Teammate) -->
+        <div class="gallery-card">
+          <div class="gallery-card-header">
+            <h3><i class="fa-regular fa-bookmark" style="color: var(--app-success);"></i> Saved Pros</h3>
+            <span class="badge badge-team">Teammate</span>
+          </div>
+          <div class="gallery-phone-frame">
+            <div class="app-card" style="padding: 12px; margin-bottom: 10px;">
+              <div style="font-size: 13px; font-weight: 700;">Sharma Electricals</div>
+              <div style="font-size: 11px; color: var(--app-text-muted); margin: 3px 0 8px;">Electrical & AC Repair</div>
+              <div style="font-size: 10.5px; color: var(--app-text-muted);">4.8 ★ • 0.8 km • Trust 92</div>
+            </div>
+            <div class="app-card" style="padding: 12px;">
+              <div style="font-size: 13px; font-weight: 700;">R.K. Quick Services</div>
+              <div style="font-size: 11px; color: var(--app-text-muted); margin: 3px 0 8px;">Plumbing Repair</div>
+              <div style="font-size: 10.5px; color: var(--app-text-muted);">4.6 ★ • 1.2 km • Trust 88</div>
+            </div>
+          </div>
+          <div class="gallery-card-footer">
+            <span>lib/screens/saved_professionals/</span>
+            <span>Teammate Baseline</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         VIEW 3: DESIGN TOKEN AUDIT TABLE
+    ============================================================ -->
+    <section id="view-tokens" style="display: none;">
+      <div class="section-title-wrap">
+        <h2 class="section-title">
+          <i class="fa-solid fa-swatchbook" style="color: var(--app-primary);"></i>
+          Design System & Aesthetics Token Alignment
+        </h2>
+        <p class="section-subtitle">
+          Code-level comparison verifying that your newly built screens utilize the identical Flutter theme tokens as your teammates' files.
+        </p>
+      </div>
+
+      <table class="token-table">
+        <thead>
+          <tr>
+            <th>Token Name</th>
+            <th>Value / Code</th>
+            <th>Teammates' Usage</th>
+            <th>Your Usage (Kuldeep)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>AppColors.background</strong></td>
+            <td><span class="color-preview-box" style="background: #1B1B1B;"></span> <code>#1B1B1B</code></td>
+            <td>HomeScreen, DiagnosisScreen, LoginScreen</td>
+            <td>ProfileScreen, SettingsScreen, HistoryScreen</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> 100% Identical</span></td>
+          </tr>
+          <tr>
+            <td><strong>AppColors.card</strong></td>
+            <td><span class="color-preview-box" style="background: #242424;"></span> <code>#242424</code></td>
+            <td>Problem Card, Diagnosis Card</td>
+            <td>Profile Header, History Cards, Settings Tiles</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> 100% Identical</span></td>
+          </tr>
+          <tr>
+            <td><strong>AppColors.surface</strong></td>
+            <td><span class="color-preview-box" style="background: #2A2A2A;"></span> <code>#2A2A2A</code></td>
+            <td>Input Field, Quick Service Chips</td>
+            <td>Address Tile, Filter Chips, Stat Pills</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> 100% Identical</span></td>
+          </tr>
+          <tr>
+            <td><strong>AppColors.primary</strong></td>
+            <td><span class="color-preview-box" style="background: #6C63FF;"></span> <code>#6C63FF</code></td>
+            <td>Diagnose Button, App Title</td>
+            <td>Active Tabs, Action Buttons, Switches</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> 100% Identical</span></td>
+          </tr>
+          <tr>
+            <td><strong>AppColors.secondary</strong></td>
+            <td><span class="color-preview-box" style="background: #8B80FF;"></span> <code>#8B80FF</code></td>
+            <td>Gradient Accent, Subtitles</td>
+            <td>Avatar Gradient, Icons, Badges</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> 100% Identical</span></td>
+          </tr>
+          <tr>
+            <td><strong>Card Radius</strong></td>
+            <td><code>BorderRadius.circular(20)</code></td>
+            <td>Service Cards, Diagnosis Result</td>
+            <td>Profile Cards, History Tiles, Settings Groups</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> 100% Identical</span></td>
+          </tr>
+          <tr>
+            <td><strong>Button Radius</strong></td>
+            <td><code>BorderRadius.circular(14 - 16)</code></td>
+            <td>ElevatedButton & OutlinedButton</td>
+            <td>Log Out Button, View Diagnosis, Settings Action</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> 100% Identical</span></td>
+          </tr>
+          <tr>
+            <td><strong>Navigation Stack</strong></td>
+            <td><code>IndexedStack(children: [...])</code></td>
+            <td>Initial single scroll view</td>
+            <td>Seamless 4-tab bottom navigation</td>
+            <td><span class="badge badge-team"><i class="fa-solid fa-check"></i> Upgraded & Fluid</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <script>
+    // Tab switching in main view
+    function switchView(viewName) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('main > section').forEach(s => s.style.display = 'none');
+
+      if (viewName === 'simulator') {
+        document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+        document.getElementById('view-simulator').style.display = 'block';
+      } else if (viewName === 'gallery') {
+        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('view-gallery').style.display = 'block';
+      } else if (viewName === 'tokens') {
+        document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+        document.getElementById('view-tokens').style.display = 'block';
+      }
+    }
+
+    // Phone screen switching
+    function showScreen(screenId) {
+      // Hide all viewports
+      document.querySelectorAll('.phone-viewport').forEach(v => v.classList.remove('active'));
+      const target = document.getElementById('screen-' + screenId);
+      if (target) {
+        target.classList.add('active');
+      }
+
+      // Update phone bottom nav
+      document.querySelectorAll('.phone-nav .nav-item').forEach(n => n.classList.remove('active'));
+      if (screenId === 'home') document.getElementById('nav-home')?.classList.add('active');
+      if (screenId === 'history') document.getElementById('nav-history')?.classList.add('active');
+      if (screenId === 'saved') document.getElementById('nav-saved')?.classList.add('active');
+      if (screenId === 'profile' || screenId === 'settings') document.getElementById('nav-profile')?.classList.add('active');
+
+      // Update sidebar choice buttons
+      document.querySelectorAll('.screen-choice-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-' + screenId);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      closeModals();
+    }
+
+    // Modals
+    function openAddressModal() {
+      document.getElementById('modal-address').classList.add('active');
+    }
+
+    function openSupportModal() {
+      document.getElementById('modal-support').classList.add('active');
+    }
+
+    function openLogoutModal() {
+      document.getElementById('modal-logout').classList.add('active');
+    }
+
+    function closeModals() {
+      document.querySelectorAll('.mock-modal-overlay').forEach(m => m.classList.remove('active'));
+    }
+  </script>
+</body>
+</html>
