@@ -57,22 +57,21 @@ class DefaultFirebaseOptions {
     projectId: 'home-fix-ai-5429f',
     storageBucket: 'home-fix-ai-5429f.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCpg2NwlB1Rk4dzUxyIhgMpYYchvN5ls2s',
-    appId: '1:992961158660:ios:85acf0bdcdf8210e875f51',
-    messagingSenderId: '992961158660',
-    projectId: 'home-fix-ai-5429f',
-    storageBucket: 'home-fix-ai-5429f.firebasestorage.app',
+    apiKey: 'AIzaSyAi_oL6flgT-D9voM2ZTg9UaSO-S06kPps',
+    appId: '1:519882857957:ios:2adbcf2889c5c01761230c',
+    messagingSenderId: '519882857957',
+    projectId: 'home-fix-ai-demo-de038',
+    storageBucket: 'home-fix-ai-demo-de038.firebasestorage.app',
     iosBundleId: 'com.example.testApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCpg2NwlB1Rk4dzUxyIhgMpYYchvN5ls2s',
-    appId: '1:992961158660:ios:85acf0bdcdf8210e875f51',
-    messagingSenderId: '992961158660',
-    projectId: 'home-fix-ai-5429f',
-    storageBucket: 'home-fix-ai-5429f.firebasestorage.app',
+    apiKey: 'AIzaSyAi_oL6flgT-D9voM2ZTg9UaSO-S06kPps',
+    appId: '1:519882857957:ios:2adbcf2889c5c01761230c',
+    messagingSenderId: '519882857957',
+    projectId: 'home-fix-ai-demo-de038',
+    storageBucket: 'home-fix-ai-demo-de038.firebasestorage.app',
     iosBundleId: 'com.example.testApp',
   );
 

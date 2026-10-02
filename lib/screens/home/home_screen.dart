@@ -348,8 +348,11 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: Icons.notifications_none_rounded,
           onTap: () {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const NotificationsScreen()),
+              MaterialPageRoute(
+                builder: (context) => const NotificationsScreen(),
+              ),
             );
+            
           },
         ),
 
