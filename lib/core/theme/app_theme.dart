@@ -48,12 +48,12 @@ class AppTheme {
 
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
-        TargetPlatform.fuchsia: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.android: SmoothFadeSlidePageTransitionsBuilder(),
+        TargetPlatform.iOS: SmoothFadeSlidePageTransitionsBuilder(),
+        TargetPlatform.windows: SmoothFadeSlidePageTransitionsBuilder(),
+        TargetPlatform.macOS: SmoothFadeSlidePageTransitionsBuilder(),
+        TargetPlatform.linux: SmoothFadeSlidePageTransitionsBuilder(),
+        TargetPlatform.fuchsia: SmoothFadeSlidePageTransitionsBuilder(),
       },
     ),
 
@@ -118,4 +118,50 @@ class AppTheme {
       ),
     ),
   );
+}
+
+/// Zero-flicker, butter-smooth page transition builder.
+/// Combines a subtle 4% slide with a smooth cubic fade, ensuring the canvas never
+/// blinks or exposes unpainted background pixels during transitions.
+class SmoothFadeSlidePageTransitionsBuilder extends PageTransitionsBuilder {
+  const SmoothFadeSlidePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curvedAnimation = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+
+    final fadeAnimation = CurvedAnimation(
+      parent: animation,
+      curve: const Interval(0.0, 0.75, curve: Curves.easeOut),
+    );
+
+    final secondaryFade = CurvedAnimation(
+      parent: secondaryAnimation,
+      curve: const Interval(0.0, 0.75, curve: Curves.easeIn),
+    );
+
+    return FadeTransition(
+      opacity: fadeAnimation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.04, 0.0),
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: FadeTransition(
+          opacity: Tween<double>(begin: 1.0, end: 0.85).animate(secondaryFade),
+          child: child,
+        ),
+      ),
+    );
+  }
 }

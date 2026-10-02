@@ -4,20 +4,55 @@ import '../../models/professional_model.dart';
 import '../maps/professional_details_screen.dart';
 
 class ProfessionalCard extends StatelessWidget {
+  final ProfessionalModel? professional;
   final String name;
   final double rating;
   final String distance;
   final int trustScore;
   final String service;
+  final bool isSaved;
+  final VoidCallback? onBookmarkToggle;
+  final VoidCallback? onAfterDetails;
 
   const ProfessionalCard({
     super.key,
+    this.professional,
     required this.name,
     required this.rating,
     required this.distance,
     required this.trustScore,
     required this.service,
+    this.isSaved = true,
+    this.onBookmarkToggle,
+    this.onAfterDetails,
   });
+
+  ProfessionalModel get _resolvedModel {
+    if (professional != null) return professional!;
+    return ProfessionalModel.sampleProfessionals.firstWhere(
+      (p) => p.name.toLowerCase().contains(name.toLowerCase()),
+      orElse: () => ProfessionalModel(
+        id: 'custom_${name.hashCode}',
+        name: name,
+        category: service.contains('Plumb') ? 'Plumbing' : 'Electrical',
+        specialty: service,
+        rating: rating,
+        reviewCount: 95,
+        trustScore: trustScore,
+        completedRepairs: 120,
+        distance: distance,
+        latitude: 28.6139,
+        longitude: 77.2090,
+        phoneNumber: '+91 98112 34567',
+        address: 'Local Service Partner',
+        experienceYears: 6,
+        pricingStartingAt: '₹299',
+        aiReviewSummary:
+            'AI verified for consistently meeting quality benchmarks and prompt home repair resolution.',
+        isSaved: isSaved,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,11 +114,31 @@ class ProfessionalCard extends StatelessWidget {
                 ),
               ),
 
-              // Saved icon
-              const Icon(
-                Icons.bookmark_rounded,
-                color: Color(0xFF6C63FF),
-                size: 23,
+              // Interactive bookmark toggle
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onBookmarkToggle,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, anim) =>
+                          ScaleTransition(scale: anim, child: child),
+                      child: Icon(
+                        isSaved
+                            ? Icons.bookmark_rounded
+                            : Icons.bookmark_border_rounded,
+                        key: ValueKey<bool>(isSaved),
+                        color: isSaved
+                            ? const Color(0xFF6C63FF)
+                            : const Color(0xFFAAAAAA),
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -124,32 +179,9 @@ class ProfessionalCard extends StatelessWidget {
             width: double.infinity,
             height: 44,
             child: OutlinedButton(
-              onPressed: () {
-                final match = ProfessionalModel.sampleProfessionals.firstWhere(
-                  (p) => p.name.toLowerCase().contains(name.toLowerCase()),
-                  orElse: () => ProfessionalModel(
-                    id: 'custom_${name.hashCode}',
-                    name: name,
-                    category: service.contains('Plumb') ? 'Plumbing' : 'Electrical',
-                    specialty: service,
-                    rating: rating,
-                    reviewCount: 95,
-                    trustScore: trustScore,
-                    completedRepairs: 120,
-                    distance: distance,
-                    latitude: 28.6139,
-                    longitude: 77.2090,
-                    phoneNumber: '+91 98112 34567',
-                    address: 'Local Service Partner',
-                    experienceYears: 6,
-                    pricingStartingAt: '₹299',
-                    aiReviewSummary:
-                        'AI verified for consistently meeting quality benchmarks and prompt home repair resolution.',
-                    isSaved: true,
-                  ),
-                );
-
-                Navigator.push(
+              onPressed: () async {
+                final match = _resolvedModel;
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => ProfessionalDetailsScreen(
@@ -157,6 +189,7 @@ class ProfessionalCard extends StatelessWidget {
                     ),
                   ),
                 );
+                onAfterDetails?.call();
               },
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(
