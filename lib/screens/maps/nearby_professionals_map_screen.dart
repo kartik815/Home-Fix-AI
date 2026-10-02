@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../models/professional_model.dart';
+import '../home/home_screen.dart';
 import 'professional_details_screen.dart';
 
 class NearbyProfessionalsMapScreen extends StatefulWidget {
@@ -71,7 +72,52 @@ class _NearbyProfessionalsMapScreenState
   void initState() {
     super.initState();
     _selectedCategory = widget.category ?? 'All';
+    _syncTechniciansWithUserLocation(_userLocation);
     _fetchLiveLocation();
+  }
+
+  void _syncTechniciansWithUserLocation(LatLng userLoc) {
+    // Realistic geographical offsets so technicians are distributed within 0.8 km - 3.5 km around user
+    final offsets = [
+      const Offset(0.0052, 0.0048),   // ~0.8 km NE (Sharma Electricals)
+      const Offset(-0.0075, 0.0062),  // ~1.2 km NW (R.K. Quick Plumbing)
+      const Offset(0.0110, -0.0092),  // ~1.8 km SE (CoolCare AC Solutions)
+      const Offset(-0.0142, -0.0125), // ~2.4 km SW (PowerFix Appliance Masters)
+      const Offset(0.0185, 0.0160),   // ~3.1 km NE (VoltSafe Electrical Care)
+    ];
+
+    for (int i = 0; i < ProfessionalModel.sampleProfessionals.length; i++) {
+      final pro = ProfessionalModel.sampleProfessionals[i];
+      final offset = offsets[i % offsets.length];
+      final proLat = userLoc.latitude + offset.dx;
+      final proLng = userLoc.longitude + offset.dy;
+      final meters = Geolocator.distanceBetween(
+        userLoc.latitude,
+        userLoc.longitude,
+        proLat,
+        proLng,
+      );
+      final distStr = meters < 1000
+          ? '${meters.round()} m'
+          : '${(meters / 1000).toStringAsFixed(1)} km';
+      pro.updateLocation(lat: proLat, lng: proLng, dist: distStr);
+    }
+  }
+
+  String _getDistanceText(ProfessionalModel pro) {
+    final meters = Geolocator.distanceBetween(
+      _userLocation.latitude,
+      _userLocation.longitude,
+      pro.latitude,
+      pro.longitude,
+    );
+    if (meters < 1000) {
+      return '${meters.round()} m';
+    } else if (meters < 100000) {
+      return '${(meters / 1000).toStringAsFixed(1)} km';
+    } else {
+      return '${(meters / 1000).toStringAsFixed(0)} km';
+    }
   }
 
   Future<void> _fetchLiveLocation() async {
@@ -102,8 +148,9 @@ class _NearbyProfessionalsMapScreenState
       );
 
       if (mounted) {
+        _userLocation = LatLng(pos.latitude, pos.longitude);
+        _syncTechniciansWithUserLocation(_userLocation);
         setState(() {
-          _userLocation = LatLng(pos.latitude, pos.longitude);
           _isLoadingLocation = false;
         });
         _mapController?.animateCamera(
@@ -120,7 +167,7 @@ class _NearbyProfessionalsMapScreenState
   @override
   void dispose() {
     _pageController.dispose();
-    _mapController?.dispose();
+    // Do not call _mapController?.dispose() here as GoogleMap manages its own controller.
     super.dispose();
   }
 
@@ -155,7 +202,7 @@ class _NearbyProfessionalsMapScreenState
           position: LatLng(pro.latitude, pro.longitude),
           infoWindow: InfoWindow(
             title: pro.name,
-            snippet: '${pro.rating} ★ • ${pro.distance} away',
+            snippet: '${pro.rating} ★ • ${_getDistanceText(pro)} away',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(
             isSelected ? BitmapDescriptor.hueViolet : BitmapDescriptor.hueRed,
@@ -232,87 +279,90 @@ class _NearbyProfessionalsMapScreenState
   Widget build(BuildContext context) {
     final pros = _filteredProfessionals;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // MAP OR LIST VIEW
-            Positioned.fill(
-              child: _isListView ? _buildListView(pros) : _buildMapView(pros),
-            ),
-
-            // TOP NAVIGATION & FILTERS
-            Positioned(
-              top: 12,
-              left: 16,
-              right: 16,
-              child: Column(
-                children: [
-                  _buildTopBar(),
-                  const SizedBox(height: 10),
-                  _buildCategoryChips(),
-                ],
+    return PopScope(
+      canPop: true,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // MAP OR LIST VIEW
+              Positioned.fill(
+                child: _isListView ? _buildListView(pros) : _buildMapView(pros),
               ),
-            ),
 
-            // FLOATING MAP CONTROLS
-            if (!_isListView)
+              // TOP NAVIGATION & FILTERS
               Positioned(
+                top: 12,
+                left: 16,
                 right: 16,
-                top: 130,
                 child: Column(
                   children: [
-                    _floatingBtn(
-                      icon: _isLoadingLocation ? Icons.hourglass_top_rounded : Icons.my_location_rounded,
-                      tooltip: 'My Location',
-                      onTap: _fetchLiveLocation,
-                    ),
+                    _buildTopBar(),
                     const SizedBox(height: 10),
-                    _floatingBtn(
-                      icon: _currentMapType == MapType.normal
-                          ? Icons.layers_rounded
-                          : Icons.map_rounded,
-                      tooltip: 'Toggle Map Style',
-                      onTap: () {
-                        setState(() {
-                          _currentMapType = _currentMapType == MapType.normal
-                              ? MapType.hybrid
-                              : MapType.normal;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    _floatingBtn(
-                      icon: Icons.tune_rounded,
-                      tooltip: 'Radius Filter',
-                      onTap: _showRadiusFilterDialog,
-                    ),
+                    _buildCategoryChips(),
                   ],
                 ),
               ),
 
-            // BOTTOM TECHNICIANS CAROUSEL
-            if (!_isListView && pros.isNotEmpty)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 20,
-                child: SizedBox(
-                  height: 190,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    itemCount: pros.length,
-                    onPageChanged: (index) => _onProChanged(index, pros),
-                    itemBuilder: (context, index) {
-                      final pro = pros[index];
-                      final isSelected = index == _selectedProIndex;
-                      return _buildCarouselCard(pro, isSelected);
-                    },
+              // FLOATING MAP CONTROLS
+              if (!_isListView)
+                Positioned(
+                  right: 16,
+                  top: 130,
+                  child: Column(
+                    children: [
+                      _floatingBtn(
+                        icon: _isLoadingLocation ? Icons.hourglass_top_rounded : Icons.my_location_rounded,
+                        tooltip: 'My Location',
+                        onTap: _fetchLiveLocation,
+                      ),
+                      const SizedBox(height: 10),
+                      _floatingBtn(
+                        icon: _currentMapType == MapType.normal
+                            ? Icons.layers_rounded
+                            : Icons.map_rounded,
+                        tooltip: 'Toggle Map Style',
+                        onTap: () {
+                          setState(() {
+                            _currentMapType = _currentMapType == MapType.normal
+                                ? MapType.hybrid
+                                : MapType.normal;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      _floatingBtn(
+                        icon: Icons.tune_rounded,
+                        tooltip: 'Radius Filter',
+                        onTap: _showRadiusFilterDialog,
+                      ),
+                    ],
                   ),
                 ),
-              ),
-          ],
+
+              // BOTTOM TECHNICIANS CAROUSEL
+              if (!_isListView && pros.isNotEmpty)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 20,
+                  child: SizedBox(
+                    height: 190,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: pros.length,
+                      onPageChanged: (index) => _onProChanged(index, pros),
+                      itemBuilder: (context, index) {
+                        final pro = pros[index];
+                        final isSelected = index == _selectedProIndex;
+                        return _buildCarouselCard(pro, isSelected);
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -337,7 +387,15 @@ class _NearbyProfessionalsMapScreenState
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const HomeScreen()),
+                );
+              }
+            },
           ),
           const SizedBox(width: 4),
           const Expanded(
@@ -645,7 +703,7 @@ class _NearbyProfessionalsMapScreenState
               ),
               const Spacer(),
               Text(
-                pro.distance,
+                _getDistanceText(pro),
                 style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 12,
@@ -754,7 +812,7 @@ class _NearbyProfessionalsMapScreenState
               ),
               const Spacer(),
               Text(
-                '${pro.distance} away',
+                '${_getDistanceText(pro)} away',
                 style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
               ),
             ],

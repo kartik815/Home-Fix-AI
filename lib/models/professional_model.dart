@@ -7,9 +7,9 @@ class ProfessionalModel {
   final int reviewCount;
   final int trustScore;
   final int completedRepairs;
-  final String distance;
-  final double latitude;
-  final double longitude;
+  String distance;
+  double latitude;
+  double longitude;
   final String phoneNumber;
   final String address;
   final int experienceYears;
@@ -40,6 +40,16 @@ class ProfessionalModel {
     this.isVerified = true,
     this.services = const [],
   });
+
+  void updateLocation({
+    required double lat,
+    required double lng,
+    required String dist,
+  }) {
+    latitude = lat;
+    longitude = lng;
+    distance = dist;
+  }
 
   static List<ProfessionalModel> sampleProfessionals = [
     ProfessionalModel(

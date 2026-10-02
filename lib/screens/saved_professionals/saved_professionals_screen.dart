@@ -25,8 +25,9 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
       pro.isSaved = !pro.isSaved;
     });
 
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    final controller = messenger.showSnackBar(
       SnackBar(
         content: Text(
           pro.isSaved
@@ -35,6 +36,9 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
         ),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
+        showCloseIcon: true,
+        closeIconColor: Colors.white70,
+        dismissDirection: DismissDirection.horizontal,
         action: SnackBarAction(
           label: 'Undo',
           textColor: const Color(0xFF8B80FF),
@@ -42,10 +46,25 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
             setState(() {
               pro.isSaved = !pro.isSaved;
             });
+            messenger.hideCurrentSnackBar();
           },
         ),
       ),
     );
+
+    // Guaranteed auto-dismiss fallback to ensure snackbar disappears
+    Future.delayed(const Duration(milliseconds: 2100), () {
+      if (mounted) {
+        controller.close();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // Clear lingering snackbars when navigating away or switching tabs
+    ScaffoldMessenger.of(context).clearSnackBars();
+    super.dispose();
   }
 
   @override
