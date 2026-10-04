@@ -7,7 +7,14 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
 class AddServiceProviderScreen extends StatefulWidget {
-  const AddServiceProviderScreen({super.key});
+  final String? providerId;
+  final Map<String, dynamic>? providerData;
+
+  const AddServiceProviderScreen({
+    super.key,
+    this.providerId,
+    this.providerData,
+  });
 
   @override
   State<AddServiceProviderScreen> createState() =>
@@ -37,7 +44,7 @@ class _AddServiceProviderScreenState
   bool _isVerified = true;
   bool _saving = false;
   bool _available = true;
-  final List<Map<String, dynamic>> _pastJobs = [];
+  List<Map<String, dynamic>> _pastJobs = [];
 
   final List<String> _categories = const [
     'Electrical',
@@ -49,6 +56,111 @@ class _AddServiceProviderScreenState
     'Cleaning',
     'Other',
   ];
+
+  @override
+void initState() {
+    super.initState();
+
+    if (widget.providerData != null) {
+      _loadProviderData(widget.providerData!);
+    } else if (widget.providerId != null) {
+      _loadProviderFromFirestore(widget.providerId!);
+    }
+  }
+
+  void _loadProviderData(Map<String, dynamic> data) {
+    _nameController.text = data['name']?.toString() ?? '';
+    _specialtyController.text = data['specialty']?.toString() ?? '';
+    _phoneController.text = data['phoneNumber']?.toString() ?? '';
+    _addressController.text = data['address']?.toString() ?? '';
+
+    _experienceController.text =
+        data['experienceYears']?.toString() ?? '';
+
+    _pricingController.text =
+        data['pricingStartingAt']?.toString() ?? '';
+
+    _latitudeController.text =
+        data['latitude']?.toString() ?? '';
+
+    _longitudeController.text =
+        data['longitude']?.toString() ?? '';
+
+    _serviceRadiusController.text =
+        data['serviceRadiusKm']?.toString() ?? '10';
+
+    _servicesController.text =
+        _listToText(data['services']);
+
+    _skillsController.text =
+        _listToText(data['skills']);
+
+    _brandsController.text =
+        _listToText(data['brands']);
+
+    _equipmentTypesController.text =
+        _listToText(data['equipmentTypes']);
+
+    _problemTypesController.text =
+        _listToText(data['problemTypes']);
+
+    final category = data['category']?.toString();
+    if (category != null && _categories.contains(category)) {
+      _category = category;
+    }
+
+    _isVerified = data['isVerified'] == true;
+
+    // Old providers without this field should remain available.
+    _available = data['available'] != false;
+
+    final pastJobs = data['pastJobs'];
+    if (pastJobs is List) {
+      _pastJobs = pastJobs
+          .map((job) => Map<String, dynamic>.from(job as Map))
+          .toList();
+    } else {
+      _pastJobs = [];
+    }
+  }
+
+  String _listToText(dynamic value) {
+    if (value is List) {
+      return value.map((item) => item.toString()).join(', ');
+    }
+
+    return '';
+  }
+
+  Future<void> _loadProviderFromFirestore(String providerId) async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('professionals')
+          .doc(providerId)
+          .get();
+
+      if (!doc.exists) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Service provider not found.'),
+            ),
+          );
+        }
+        return;
+      }
+
+      _loadProviderData(doc.data()!);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load provider: $e'),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -531,49 +643,66 @@ class _AddServiceProviderScreenState
       // 1. ADD PROVIDER TO FIRESTORE
       // -----------------------------------------------------------------------
 
-      await FirebaseFirestore.instance
-          .collection('professionals')
-          .add({
+      final providerData = {
         'name': providerName,
         'category': _category,
-        'specialty':
-            _specialtyController.text.trim(),
-        'phoneNumber':
-            _phoneController.text.trim(),
-        'address':
-            _addressController.text.trim(),
+        'specialty': _specialtyController.text.trim(),
+        'phoneNumber': _phoneController.text.trim(),
+        'address': _addressController.text.trim(),
         'experienceYears': experience,
         'pricingStartingAt': pricing,
         'latitude': latitude,
         'longitude': longitude,
-        'rating': 0.0,
-        'reviewCount': 0,
-        'trustScore': 0.0,
-        'completedRepairs': 0,
-        'aiReviewSummary': '',
-        'isVerified': _isVerified,
         'services': services,
-        'createdAt':
-            FieldValue.serverTimestamp(),
+
+        // AI matching fields
         'skills': skills,
         'brands': brands,
         'equipmentTypes': equipmentTypes,
         'problemTypes': problemTypes,
         'pastJobs': _pastJobs,
         'serviceRadiusKm': serviceRadiusKm,
+
+        // Availability
         'available': _available,
-      });
+        'isVerified': _isVerified,
+      };
+
+      if (widget.providerId != null) {
+        // EDIT EXISTING PROVIDER
+        await FirebaseFirestore.instance
+            .collection('professionals')
+            .doc(widget.providerId)
+            .update(providerData);
+      } else {
+        // ADD NEW PROVIDER
+        await FirebaseFirestore.instance
+            .collection('professionals')
+            .add({
+          ...providerData,
+
+          // Only initialize these when creating a new provider.
+          'rating': 0.0,
+          'reviewCount': 0,
+          'trustScore': 0.0,
+          'completedRepairs': 0,
+          'aiReviewSummary': '',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
 
       // -----------------------------------------------------------------------
       // 2. NOTIFY USERS WITHIN 10 KM
       // -----------------------------------------------------------------------
 
-      await _notifyNearbyUsers(
+      if (widget.providerId == null) {
+        await _notifyNearbyUsers(
         providerLatitude: latitude,
         providerLongitude: longitude,
         providerName: providerName,
         category: _category,
       );
+      }
 
       if (!mounted) {
         return;
@@ -584,11 +713,12 @@ class _AddServiceProviderScreenState
       // -----------------------------------------------------------------------
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Service provider added successfully.',
+            widget.providerId != null
+                ? 'Service provider updated successfully.'
+                : 'Service provider added successfully.',
           ),
-          behavior: SnackBarBehavior.floating,
         ),
       );
 
@@ -688,12 +818,13 @@ class _AddServiceProviderScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.providerId != null;
     return Scaffold(
       backgroundColor: AppColors.background,
 
       appBar: AppBar(
-        title: const Text(
-          'Add Service Provider',
+        title: Text(
+          isEditing ? 'Edit Service Provider' : 'Add Service Provider',
         ),
         backgroundColor:
             AppColors.background,
@@ -719,7 +850,9 @@ class _AddServiceProviderScreenState
                 const SizedBox(height: 8),
 
                 Text(
-                  'Add a new service provider to the platform.',
+                  isEditing
+                    ? 'Update the service provider details.'
+                    : 'Add a new service provider to the platform.',
                   style: AppTextStyles.bodySecondary,
                 ),
 
@@ -1242,8 +1375,8 @@ class _AddServiceProviderScreenState
                               color: Colors.white,
                             ),
                           )
-                        : const Text(
-                            'Add Service Provider',
+                        : Text(
+                            isEditing ? 'Save Changes' : 'Add Service Provider',
                             style: TextStyle(
                               fontWeight:
                                   FontWeight.w600,
