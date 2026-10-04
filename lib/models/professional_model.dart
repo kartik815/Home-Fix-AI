@@ -7,12 +7,9 @@ class ProfessionalModel {
   final int reviewCount;
   final int trustScore;
   final int completedRepairs;
-
-  // Runtime/location information
   String distance;
   double latitude;
   double longitude;
-
   final String phoneNumber;
   final String address;
   final int experienceYears;
@@ -45,82 +42,6 @@ class ProfessionalModel {
     this.services = const [],
   });
 
-  // ------------------------------------------------------------
-  // FIRESTORE → MODEL
-  // ------------------------------------------------------------
-
-  factory ProfessionalModel.fromMap(
-    String id,
-    Map<String, dynamic> data,
-  ) {
-    final rawServices = data['services'];
-
-    final services = rawServices is List
-        ? rawServices
-            .whereType<Map>()
-            .map(
-              (service) => ServicePricing.fromMap(
-                Map<String, dynamic>.from(service),
-              ),
-            )
-            .toList()
-        : <ServicePricing>[];
-
-    return ProfessionalModel(
-      id: id,
-      name: data['name']?.toString() ?? '',
-      category: data['category']?.toString() ?? '',
-      specialty: data['specialty']?.toString() ?? '',
-      rating: _toDouble(data['rating']),
-      reviewCount: _toInt(data['reviewCount']),
-      trustScore: _toInt(data['trustScore']),
-      completedRepairs: _toInt(data['completedRepairs']),
-      distance: data['distance']?.toString() ?? '',
-      latitude: _toDouble(data['latitude']),
-      longitude: _toDouble(data['longitude']),
-      phoneNumber: data['phoneNumber']?.toString() ?? '',
-      address: data['address']?.toString() ?? '',
-      experienceYears: _toInt(data['experienceYears']),
-      pricingStartingAt:
-          data['pricingStartingAt']?.toString() ?? '',
-      aiReviewSummary:
-          data['aiReviewSummary']?.toString() ?? '',
-      isSaved: data['isSaved'] == true,
-      isVerified: data['isVerified'] != false,
-      services: services,
-    );
-  }
-
-  // ------------------------------------------------------------
-  // MODEL → FIRESTORE
-  // ------------------------------------------------------------
-
-  Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'category': category,
-      'specialty': specialty,
-      'rating': rating,
-      'reviewCount': reviewCount,
-      'trustScore': trustScore,
-      'completedRepairs': completedRepairs,
-      'latitude': latitude,
-      'longitude': longitude,
-      'phoneNumber': phoneNumber,
-      'address': address,
-      'experienceYears': experienceYears,
-      'pricingStartingAt': pricingStartingAt,
-      'aiReviewSummary': aiReviewSummary,
-      'isSaved': isSaved,
-      'isVerified': isVerified,
-      'services': services.map((service) => service.toMap()).toList(),
-    };
-  }
-
-  // ------------------------------------------------------------
-  // UPDATE LOCATION
-  // ------------------------------------------------------------
-
   void updateLocation({
     required double lat,
     required double lng,
@@ -130,33 +51,6 @@ class ProfessionalModel {
     longitude = lng;
     distance = dist;
   }
-
-  // ------------------------------------------------------------
-  // FIRESTORE VALUE HELPERS
-  // ------------------------------------------------------------
-
-  static double _toDouble(dynamic value) {
-    if (value is num) {
-      return value.toDouble();
-    }
-
-    return double.tryParse(value?.toString() ?? '') ?? 0.0;
-  }
-
-  static int _toInt(dynamic value) {
-    if (value is num) {
-      return value.toInt();
-    }
-
-    return int.tryParse(value?.toString() ?? '') ?? 0;
-  }
-
-  // ------------------------------------------------------------
-  // TEMPORARY SAMPLE DATA
-  //
-  // We keep this for now so the existing Nearby Professionals
-  // screen continues to work while we migrate to Firestore.
-  // ------------------------------------------------------------
 
   static List<ProfessionalModel> sampleProfessionals = [
     ProfessionalModel(

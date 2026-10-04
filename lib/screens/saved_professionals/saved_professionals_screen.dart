@@ -6,9 +6,6 @@ import '../../models/professional_model.dart';
 import '../maps/nearby_professionals_map_screen.dart';
 import 'professional_card.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
 class SavedProfessionalsScreen extends StatefulWidget {
   final bool showBackButton;
 
@@ -23,42 +20,13 @@ class SavedProfessionalsScreen extends StatefulWidget {
 }
 
 class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
-  Future<void> _toggleBookmark(ProfessionalModel pro) async {
-    final wasSaved = pro.isSaved;
-
+  void _toggleBookmark(ProfessionalModel pro) {
     setState(() {
       pro.isSaved = !pro.isSaved;
     });
 
-    // Create notification only when saving.
-    if (!wasSaved && pro.isSaved) {
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user != null) {
-        try {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .collection('notifications')
-              .add({
-            'title': '⭐ Professional Saved',
-            'message':
-                '${pro.name} has been saved to your professionals.',
-            'type': 'professional',
-            'isRead': false,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-        } catch (e) {
-          debugPrint(
-            'Failed to create Professional Saved notification: $e',
-          );
-        }
-      }
-    }
-
     final messenger = ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
-
     final controller = messenger.showSnackBar(
       SnackBar(
         content: Text(
@@ -70,8 +38,7 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
         duration: const Duration(seconds: 2),
         showCloseIcon: true,
         closeIconColor: Colors.white70,
-        dismissDirection:
-            DismissDirection.horizontal,
+        dismissDirection: DismissDirection.horizontal,
         action: SnackBarAction(
           label: 'Undo',
           textColor: const Color(0xFF8B80FF),
@@ -79,21 +46,18 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
             setState(() {
               pro.isSaved = !pro.isSaved;
             });
-
             messenger.hideCurrentSnackBar();
           },
         ),
       ),
     );
 
-    Future.delayed(
-      const Duration(milliseconds: 2100),
-      () {
-        if (mounted) {
-          controller.close();
-        }
-      },
-    );
+    // Guaranteed auto-dismiss fallback to ensure snackbar disappears
+    Future.delayed(const Duration(milliseconds: 2100), () {
+      if (mounted) {
+        controller.close();
+      }
+    });
   }
 
   @override
