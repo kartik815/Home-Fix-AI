@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
 
@@ -9,9 +12,10 @@ import 'core/theme/app_theme.dart';
 import 'core/constants/app_radius.dart';
 
 import 'screens/auth/login_register_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/home/home_screen.dart';
+import 'screens/admin/admin_dashboard_screen.dart';
 
+import 'services/global_notification_listener.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,33 +26,92 @@ void main() async {
 
   runApp(const HomePilotOnboardingApp());
 }
+
+
 class HomePilotOnboardingApp extends StatelessWidget {
   const HomePilotOnboardingApp({super.key});
 
+  static final GlobalKey<NavigatorState> _navigatorKey =
+      GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'HomePilot AI',
-      color: AppColors.background,
-      theme: AppTheme.darkTheme,
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          }
-          if (snapshot.hasData) {
-            return const HomeScreen(); // Logged in
-          }
-          return const OnboardingScreen(); // Not logged in
+    return GlobalNotificationListener(
+      navigatorKey: _navigatorKey,
+      child: MaterialApp(
+        navigatorKey: _navigatorKey,
+
+        debugShowCheckedModeBanner: false,
+        title: 'HomePilot AI',
+        color: AppColors.background,
+        theme: AppTheme.darkTheme,
+
+        home: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState ==
+                ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+
+            if (snapshot.hasData) {
+              return const UserRoleGate();
+            }
+
+            return const OnboardingScreen();
+          },
+        ),
+
+        routes: {
+          '/login': (_) => const LoginRegisterScreen(),
+          '/home': (_) => const HomeScreen(),
         },
       ),
-      routes: {
-        '/login': (_) => const LoginRegisterScreen(),
-        '/home': (_) => const HomeScreen(),
+    );
+  }
+}
+
+class UserRoleGate extends StatelessWidget {
+  const UserRoleGate({super.key});
+
+  Future<bool> _isAdmin() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    final document = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    return document.exists && document.data()?['role'] == 'admin';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _isAdmin(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            backgroundColor: AppColors.background,
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (snapshot.data == true) {
+          return const AdminDashboardScreen();
+        }
+
+        return const HomeScreen();
       },
     );
   }
@@ -226,7 +289,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       decoration: BoxDecoration(
                         color: active
                             ? AppColors.primary
-                            : AppColors.primary.withOpacity(0.25),
+                            : AppColors.primary.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(
                           AppRadius.sm,
                         ),
@@ -325,11 +388,11 @@ class _OnboardPageContent extends StatelessWidget {
                 AppRadius.lg,
               ),
               border: Border.all(
-                color: AppColors.border.withOpacity(0.35),
+                color: AppColors.border.withValues(alpha: 0.35),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
+                  color: Colors.black.withValues(alpha: 0.25),
                   blurRadius: 24,
                   offset: const Offset(0, 10),
                 ),

@@ -238,7 +238,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
         color: AppColors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.border.withOpacity(0.5),
+          color: AppColors.border.withValues(alpha: 0.5),
         ),
       ),
       child: Row(
@@ -247,7 +247,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
           Container(
             padding: const EdgeInsets.all(11),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
@@ -294,7 +294,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.20),
+            AppColors.primary.withValues(alpha: 0.20),
             AppColors.card,
           ],
           begin: Alignment.topLeft,
@@ -302,7 +302,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.35),
+          color: AppColors.primary.withValues(alpha: 0.35),
         ),
       ),
       child: Column(
@@ -313,7 +313,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.18),
+                  color: AppColors.primary.withValues(alpha: 0.18),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -375,7 +375,7 @@ class _DiagnosisScreenState extends State<DiagnosisScreen> {
     return Container(
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.45),
+        color: AppColors.background.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
