@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart';
+
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_radius.dart';
-import 'firebase_options.dart';
+
 import 'screens/auth/login_register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'screens/home/home_screen.dart';
 
-void main() async{
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const HomePilotOnboardingApp());
 }
-
 class HomePilotOnboardingApp extends StatelessWidget {
   const HomePilotOnboardingApp({super.key});
 
@@ -379,4 +384,3 @@ class _OnboardPageContent extends StatelessWidget {
     );
   }
 }
-
