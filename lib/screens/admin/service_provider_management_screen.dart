@@ -332,10 +332,11 @@ class ServiceProviderManagementScreen extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Edit provider will be added next.',
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => AddServiceProviderScreen(
+                            providerId: providerId,
+                            providerData: data,
                           ),
                         ),
                       );
