@@ -32,8 +32,7 @@ class _SearchHistoryScreenState extends State<SearchHistoryScreen> {
   ];
 
   @override
-  @override
-void initState() {
+  void initState() {
     super.initState();
 
     _items = List.from(SearchHistoryItem.historyNotifier.value);
@@ -49,7 +48,6 @@ void initState() {
     });
   }
 
-  @override
   @override
   void dispose() {
     SearchHistoryItem.historyNotifier.removeListener(_historyChanged);

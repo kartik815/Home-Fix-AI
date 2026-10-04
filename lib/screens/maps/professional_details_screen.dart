@@ -259,20 +259,24 @@ class _ProfessionalDetailsScreenState
               }
 
               if (!mounted) return;
+              if (!context.mounted) return;
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    _isSaved
-                        ? 'Saved to Bookmarks'
-                        : 'Removed from Bookmarks',
+              final messenger = ScaffoldMessenger.maybeOf(context);
+              if (messenger != null) {
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      _isSaved
+                          ? 'Saved to Bookmarks'
+                          : 'Removed from Bookmarks',
+                    ),
+                    duration:
+                        const Duration(seconds: 1),
+                    behavior:
+                        SnackBarBehavior.floating,
                   ),
-                  duration:
-                      const Duration(seconds: 1),
-                  behavior:
-                      SnackBarBehavior.floating,
-                ),
-              );
+                );
+              }
             },
           ),
           const SizedBox(width: 8),

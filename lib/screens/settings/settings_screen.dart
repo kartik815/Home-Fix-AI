@@ -53,18 +53,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 12),
                 ...['Dark Mode (Recommended)', 'Light Mode', 'System Default'].map(
-                  (theme) => RadioListTile<String>(
-                    activeColor: AppColors.primary,
-                    title: Text(theme, style: const TextStyle(color: Colors.white)),
-                    value: theme.split(' ').first,
-                    groupValue: _selectedTheme.split(' ').first,
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedTheme = theme);
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
+                  (theme) {
+                    final value = theme.split(' ').first;
+                    final isSelected = _selectedTheme.split(' ').first == value;
+                    return ListTile(
+                      dense: true,
+                      title: Text(theme, style: const TextStyle(color: Colors.white)),
+                      leading: Icon(
+                        isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                      ),
+                      onTap: isSelected
+                          ? null
+                          : () {
+                              setState(() => _selectedTheme = theme);
+                              Navigator.pop(context);
+                            },
+                    );
+                  },
                 ),
               ],
             ),
@@ -103,18 +109,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 12),
                 ...['2 km', '5 km (Optimal)', '10 km', '25 km'].map(
-                  (radius) => RadioListTile<String>(
-                    activeColor: AppColors.primary,
-                    title: Text(radius, style: const TextStyle(color: Colors.white)),
-                    value: radius.split(' ').first,
-                    groupValue: _selectedRadius.split(' ').first,
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() => _selectedRadius = radius);
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
+                  (radius) {
+                    final value = radius.split(' ').first;
+                    final isSelected = _selectedRadius.split(' ').first == value;
+                    return ListTile(
+                      dense: true,
+                      title: Text(radius, style: const TextStyle(color: Colors.white)),
+                      leading: Icon(
+                        isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                      ),
+                      onTap: isSelected
+                          ? null
+                          : () {
+                              setState(() => _selectedRadius = radius);
+                              Navigator.pop(context);
+                            },
+                    );
+                  },
                 ),
               ],
             ),
