@@ -443,7 +443,15 @@ class _NearbyProfessionalsMapScreenState
   // BUILD
   // ---------------------------------------------------------------------------
 
+  @override
+  Widget build(BuildContext context) {
+    final pros = _filterProfessionals(ProfessionalModel.sampleProfessionals);
 
+    if (!_professionalNotificationCreated && pros.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _notifyProfessionalsFound(pros);
+      });
+    }
 
     return PopScope(
       canPop: true,
@@ -452,12 +460,9 @@ class _NearbyProfessionalsMapScreenState
         body: SafeArea(
           child: Stack(
             children: [
-              // MAP OR LIST VIEW
               Positioned.fill(
                 child: _isListView ? _buildListView(pros) : _buildMapView(pros),
               ),
-
-              // TOP NAVIGATION & FILTERS
               Positioned(
                 top: 12,
                 left: 16,
@@ -470,8 +475,6 @@ class _NearbyProfessionalsMapScreenState
                   ],
                 ),
               ),
-
-              // FLOATING MAP CONTROLS
               if (!_isListView)
                 Positioned(
                   right: 16,
@@ -479,7 +482,9 @@ class _NearbyProfessionalsMapScreenState
                   child: Column(
                     children: [
                       _floatingBtn(
-                        icon: _isLoadingLocation ? Icons.hourglass_top_rounded : Icons.my_location_rounded,
+                        icon: _isLoadingLocation
+                            ? Icons.hourglass_top_rounded
+                            : Icons.my_location_rounded,
                         tooltip: 'My Location',
                         onTap: _fetchLiveLocation,
                       ),
@@ -506,8 +511,6 @@ class _NearbyProfessionalsMapScreenState
                     ],
                   ),
                 ),
-
-              // BOTTOM TECHNICIANS CAROUSEL
               if (!_isListView && pros.isNotEmpty)
                 Positioned(
                   left: 0,
@@ -531,13 +534,8 @@ class _NearbyProfessionalsMapScreenState
           ),
         ),
       ),
-    ),
-  );
-}
-
-
- 
-  
+    );
+  }
 
   // ---------------------------------------------------------------------------
   // TOP BAR
@@ -778,25 +776,34 @@ class _NearbyProfessionalsMapScreenState
                 ),
                 const SizedBox(height: 12),
                 ..._radiusOptions.map(
-                  (r) => RadioListTile<String>(
-                    activeColor: AppColors.primary,
-                    title: Text(
-                      'Within $r',
-                      style: const TextStyle(
-                        color: Colors.white,
+                  (r) {
+                    final isSelected = _selectedRadius == r;
+                    return ListTile(
+                      dense: true,
+                      title: Text(
+                        'Within $r',
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    value: r,
-                    groupValue: _selectedRadius,
-                    onChanged: (val) {
-                      if (val != null) {
-                        setState(() {
-                          _selectedRadius = val;
-                        });
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
+                      leading: Icon(
+                        isSelected
+                            ? Icons.radio_button_checked_rounded
+                            : Icons.radio_button_unchecked_rounded,
+                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                      ),
+                      onTap: isSelected
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectedRadius = r;
+                              });
+                              if (Navigator.of(context).canPop()) {
+                                Navigator.pop(context);
+                              }
+                            },
+                    );
+                  },
                 ),
               ],
             ),

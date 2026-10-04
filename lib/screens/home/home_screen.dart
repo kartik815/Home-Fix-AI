@@ -9,7 +9,8 @@ import '../history/search_history_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
 import '../saved_professionals/saved_professionals_screen.dart';
-import '../maps/nearby_professionals_map_screen.dart';
+import '../services/service_screen.dart';
+import '../../models/search_history_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -991,109 +992,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  // ============================================================
-  // TRUST BANNER
-  // ============================================================
-
-  Widget _buildTrustBanner() {
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const NearbyProfessionalsMapScreen(),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding:
-            const EdgeInsets.all(18),
-
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              AppColors.primary
-                  .withValues(alpha: 0.20),
-              AppColors.secondary
-                  .withValues(alpha: 0.08),
-            ],
-          ),
-
-          borderRadius:
-              BorderRadius.circular(20),
-
-          border: Border.all(
-            color: AppColors.primary
-                .withValues(alpha: 0.20),
-          ),
-        ),
-
-        child: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-
-              decoration: BoxDecoration(
-                color: AppColors.primary
-                    .withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-              ),
-
-              child: const Icon(
-                Icons.verified_rounded,
-                color: AppColors.primary,
-                size: 23,
-              ),
-            ),
-
-            const SizedBox(width: 13),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-
-                children: [
-                  Text(
-                    'Find trusted professionals',
-
-                    style: TextStyle(
-                      color:
-                          AppColors.textPrimary,
-                      fontSize: 13,
-                      fontWeight:
-                          FontWeight.w700,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  Text(
-                    'Get reliable pros near you on the live map.',
-
-                    style: TextStyle(
-                      color:
-                          AppColors.textSecondary,
-                      fontSize: 11,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const Icon(
-              Icons.arrow_forward_rounded,
-              color: AppColors.primary,
-              size: 20,
-            ),
-          ],
         ),
       ),
     );

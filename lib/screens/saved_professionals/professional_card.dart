@@ -14,10 +14,6 @@ class ProfessionalCard extends StatelessWidget {
   final VoidCallback? onBookmarkToggle;
   final VoidCallback? onAfterDetails;
 
-  final bool isSaved;
-  final VoidCallback? onBookmarkToggle;
-  final VoidCallback? onAfterDetails;
-
   const ProfessionalCard({
     super.key,
     this.professional,

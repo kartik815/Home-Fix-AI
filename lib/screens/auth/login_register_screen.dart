@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/screens/home/home_screen.dart';
-import '../../core/theme/app_theme.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../home/home_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../admin/admin_dashboard_screen.dart';
+import '../home/home_screen.dart';
 
 class _Brand {
   static const blue = Color(0xFF3B82F6);
@@ -161,7 +159,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
           message = e.message ?? 'Authentication failed. Please try again.';
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (messenger == null) return;
+      messenger.showSnackBar(
         SnackBar(
           content: Text(message),
           behavior: SnackBarBehavior.floating,
@@ -172,7 +173,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
 
       setState(() => _submitting = false);
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (messenger == null) return;
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
           behavior: SnackBarBehavior.floating,
@@ -345,7 +349,11 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
                                   final email = _emailCtrl.text.trim();
 
                                   if (email.isEmpty || !email.contains('@')) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    if (!mounted) return;
+                                    if (!context.mounted) return;
+                                    final messenger = ScaffoldMessenger.maybeOf(context);
+                                    if (messenger == null) return;
+                                    messenger.showSnackBar(
                                       const SnackBar(
                                         content: Text('Enter your email first.'),
                                         behavior: SnackBarBehavior.floating,
@@ -360,8 +368,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
                                     );
 
                                     if (!mounted) return;
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    if (!context.mounted) return;
+                                    final messenger = ScaffoldMessenger.maybeOf(context);
+                                    if (messenger == null) return;
+                                    messenger.showSnackBar(
                                       const SnackBar(
                                         content: Text(
                                           'Password reset email sent. Check your inbox.',
@@ -371,6 +381,9 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
                                     );
                                   } on FirebaseAuthException catch (e) {
                                     if (!mounted) return;
+                                    if (!context.mounted) return;
+                                    final messenger = ScaffoldMessenger.maybeOf(context);
+                                    if (messenger == null) return;
 
                                     String message;
 
@@ -388,7 +401,7 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
                                             e.message ?? 'Unable to send password reset email.';
                                     }
 
-                                    ScaffoldMessenger.of(context).showSnackBar(
+                                    messenger.showSnackBar(
                                       SnackBar(
                                         content: Text(message),
                                         behavior: SnackBarBehavior.floating,
