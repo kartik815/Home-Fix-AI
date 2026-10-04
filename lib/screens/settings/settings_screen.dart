@@ -13,7 +13,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   // Theme state
   String _selectedTheme = 'Dark Mode';
-  String _selectedLanguage = 'English (US)';
+  final String _selectedLanguage = 'English (US)';
   String _selectedRadius = '5 km';
 
   // Toggle states
@@ -453,7 +453,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return SwitchListTile(
       value: value,
       onChanged: onChanged,
-      activeColor: AppColors.primary,
+      activeThumbColor: AppColors.primary,
       secondary: Container(
         width: 36,
         height: 36,

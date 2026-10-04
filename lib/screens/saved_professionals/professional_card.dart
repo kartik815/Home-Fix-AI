@@ -14,6 +14,10 @@ class ProfessionalCard extends StatelessWidget {
   final VoidCallback? onBookmarkToggle;
   final VoidCallback? onAfterDetails;
 
+  final bool isSaved;
+  final VoidCallback? onBookmarkToggle;
+  final VoidCallback? onAfterDetails;
+
   const ProfessionalCard({
     super.key,
     this.professional,
@@ -94,17 +98,19 @@ class ProfessionalCard extends StatelessWidget {
                   children: [
                     Text(
                       name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-
                     const SizedBox(height: 5),
-
                     Text(
                       service,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFFAAAAAA),
                         fontSize: 13,
@@ -184,7 +190,7 @@ class ProfessionalCard extends StatelessWidget {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ProfessionalDetailsScreen(
+                    builder: (_) => ProfessionalDetailsScreen(
                       professional: match,
                     ),
                   ),
@@ -236,9 +242,7 @@ class _InfoItem extends StatelessWidget {
           size: 17,
           color: iconColor,
         ),
-
         const SizedBox(width: 5),
-
         Text(
           value,
           style: const TextStyle(

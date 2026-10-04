@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../maps/nearby_professionals_map_screen.dart';
 
-class DiagnosisScreen extends StatelessWidget {
+class DiagnosisScreen extends StatefulWidget {
   final String problem;
 
   const DiagnosisScreen({
@@ -12,10 +14,17 @@ class DiagnosisScreen extends StatelessWidget {
     required this.problem,
   });
 
+  @override
+  State<DiagnosisScreen> createState() => _DiagnosisScreenState();
+}
+
+class _DiagnosisScreenState extends State<DiagnosisScreen> {
+  bool _notificationCreated = false;
+
   // Simple demo diagnosis logic.
-  // Later this can be replaced with apis that we want
+  // Later this can be replaced with APIs that we want
   Map<String, dynamic> _getDiagnosis() {
-    final text = problem.toLowerCase();
+    final text = widget.problem.toLowerCase();
 
     if (text.contains('ac') ||
         text.contains('air conditioner') ||
@@ -89,9 +98,49 @@ class DiagnosisScreen extends StatelessWidget {
     };
   }
 
+  // Creates a notification in Firestore for the logged-in user.
+  Future<void> _createDiagnosisNotification(
+    Map<String, dynamic> diagnosis,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      debugPrint('No logged-in user. Notification not created.');
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('notifications')
+          .add({
+        'title': 'Diagnosis Complete',
+        'message':
+            'Your ${diagnosis['diagnosis']} diagnosis is ready.',
+        'type': 'diagnosis',
+        'isRead': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      debugPrint('Diagnosis notification created successfully.');
+    } catch (e) {
+      debugPrint('Failed to create diagnosis notification: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final diagnosis = _getDiagnosis();
+
+    // Create the notification only once.
+    if (!_notificationCreated) {
+      _notificationCreated = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _createDiagnosisNotification(diagnosis);
+      });
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -103,7 +152,7 @@ class DiagnosisScreen extends StatelessWidget {
           color: AppColors.textPrimary,
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           'AI Diagnosis',
           style: AppTextStyles.title,
         ),
@@ -116,33 +165,41 @@ class DiagnosisScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(),
+
               const SizedBox(height: 20),
 
               _buildProblemCard(),
+
               const SizedBox(height: 18),
 
               _buildDiagnosisCard(diagnosis),
+
               const SizedBox(height: 18),
 
               _buildUrgencyCard(
                 diagnosis['urgency'] as String,
               ),
+
               const SizedBox(height: 18),
 
               _buildSectionTitle('Possible Causes'),
+
               const SizedBox(height: 10),
 
               _buildCausesCard(
                 List<String>.from(diagnosis['causes']),
               ),
+
               const SizedBox(height: 18),
 
               _buildSectionTitle('Suggested Solution'),
+
               const SizedBox(height: 10),
 
               _buildSolutionCard(
                 diagnosis['solution'] as String,
               ),
+
               const SizedBox(height: 24),
 
               _buildFindProfessionalsButton(context, diagnosis),
@@ -181,7 +238,7 @@ class DiagnosisScreen extends StatelessWidget {
         color: AppColors.card,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.border.withOpacity(0.5),
+          color: AppColors.border.withValues(alpha: 0.5),
         ),
       ),
       child: Row(
@@ -190,7 +247,7 @@ class DiagnosisScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(11),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
@@ -213,7 +270,9 @@ class DiagnosisScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  problem.isEmpty ? 'No problem described' : problem,
+                  widget.problem.isEmpty
+                      ? 'No problem described'
+                      : widget.problem,
                   style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 16,
@@ -235,7 +294,7 @@ class DiagnosisScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withOpacity(0.20),
+            AppColors.primary.withValues(alpha: 0.20),
             AppColors.card,
           ],
           begin: Alignment.topLeft,
@@ -243,7 +302,7 @@ class DiagnosisScreen extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.primary.withOpacity(0.35),
+          color: AppColors.primary.withValues(alpha: 0.35),
         ),
       ),
       child: Column(
@@ -254,7 +313,7 @@ class DiagnosisScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.18),
+                  color: AppColors.primary.withValues(alpha: 0.18),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -316,7 +375,7 @@ class DiagnosisScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(13),
       decoration: BoxDecoration(
-        color: AppColors.background.withOpacity(0.45),
+        color: AppColors.background.withValues(alpha: 0.45),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -494,7 +553,7 @@ class DiagnosisScreen extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => NearbyProfessionalsMapScreen(
                 category: category,
-                initialProblem: problem,
+                initialProblem: widget.problem,
               ),
             ),
           );
