@@ -7,14 +7,18 @@ class ProfessionalModel {
   final int reviewCount;
   final int trustScore;
   final int completedRepairs;
-  final String distance;
-  final double latitude;
-  final double longitude;
+
+  // Runtime/location information
+  String distance;
+  double latitude;
+  double longitude;
+
   final String phoneNumber;
   final String address;
   final int experienceYears;
   final String pricingStartingAt;
   final String aiReviewSummary;
+
   bool isSaved;
   final bool isVerified;
   final List<ServicePricing> services;
@@ -41,6 +45,119 @@ class ProfessionalModel {
     this.services = const [],
   });
 
+  // ------------------------------------------------------------
+  // FIRESTORE → MODEL
+  // ------------------------------------------------------------
+
+  factory ProfessionalModel.fromMap(
+    String id,
+    Map<String, dynamic> data,
+  ) {
+    final rawServices = data['services'];
+
+    final services = rawServices is List
+        ? rawServices
+            .whereType<Map>()
+            .map(
+              (service) => ServicePricing.fromMap(
+                Map<String, dynamic>.from(service),
+              ),
+            )
+            .toList()
+        : <ServicePricing>[];
+
+    return ProfessionalModel(
+      id: id,
+      name: data['name']?.toString() ?? '',
+      category: data['category']?.toString() ?? '',
+      specialty: data['specialty']?.toString() ?? '',
+      rating: _toDouble(data['rating']),
+      reviewCount: _toInt(data['reviewCount']),
+      trustScore: _toInt(data['trustScore']),
+      completedRepairs: _toInt(data['completedRepairs']),
+      distance: data['distance']?.toString() ?? '',
+      latitude: _toDouble(data['latitude']),
+      longitude: _toDouble(data['longitude']),
+      phoneNumber: data['phoneNumber']?.toString() ?? '',
+      address: data['address']?.toString() ?? '',
+      experienceYears: _toInt(data['experienceYears']),
+      pricingStartingAt:
+          data['pricingStartingAt']?.toString() ?? '',
+      aiReviewSummary:
+          data['aiReviewSummary']?.toString() ?? '',
+      isSaved: data['isSaved'] == true,
+      isVerified: data['isVerified'] != false,
+      services: services,
+    );
+  }
+
+  // ------------------------------------------------------------
+  // MODEL → FIRESTORE
+  // ------------------------------------------------------------
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'category': category,
+      'specialty': specialty,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'trustScore': trustScore,
+      'completedRepairs': completedRepairs,
+      'latitude': latitude,
+      'longitude': longitude,
+      'phoneNumber': phoneNumber,
+      'address': address,
+      'experienceYears': experienceYears,
+      'pricingStartingAt': pricingStartingAt,
+      'aiReviewSummary': aiReviewSummary,
+      'isSaved': isSaved,
+      'isVerified': isVerified,
+      'services': services.map((service) => service.toMap()).toList(),
+    };
+  }
+
+  // ------------------------------------------------------------
+  // UPDATE LOCATION
+  // ------------------------------------------------------------
+
+  void updateLocation({
+    required double lat,
+    required double lng,
+    required String dist,
+  }) {
+    latitude = lat;
+    longitude = lng;
+    distance = dist;
+  }
+
+  // ------------------------------------------------------------
+  // FIRESTORE VALUE HELPERS
+  // ------------------------------------------------------------
+
+  static double _toDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+
+    return double.tryParse(value?.toString() ?? '') ?? 0.0;
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is num) {
+      return value.toInt();
+    }
+
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  // ------------------------------------------------------------
+  // TEMPORARY SAMPLE DATA
+  //
+  // We keep this for now so the existing Nearby Professionals
+  // screen continues to work while we migrate to Firestore.
+  // ------------------------------------------------------------
+
   static List<ProfessionalModel> sampleProfessionals = [
     ProfessionalModel(
       id: 'pro_1',
@@ -62,12 +179,25 @@ class ProfessionalModel {
           'Ranked highest for rapid electrical diagnosis and circuit troubleshooting. 98% first-visit resolution rate.',
       isSaved: true,
       services: [
-        ServicePricing(title: 'General Inspection & Diagnostics', price: '₹249'),
-        ServicePricing(title: 'Ceiling Fan Installation / Fix', price: '₹349'),
-        ServicePricing(title: 'Short Circuit & Fuse Repair', price: '₹499'),
-        ServicePricing(title: 'Full House Wiring Check', price: '₹799'),
+        ServicePricing(
+          title: 'General Inspection & Diagnostics',
+          price: '₹249',
+        ),
+        ServicePricing(
+          title: 'Ceiling Fan Installation / Fix',
+          price: '₹349',
+        ),
+        ServicePricing(
+          title: 'Short Circuit & Fuse Repair',
+          price: '₹499',
+        ),
+        ServicePricing(
+          title: 'Full House Wiring Check',
+          price: '₹799',
+        ),
       ],
     ),
+
     ProfessionalModel(
       id: 'pro_2',
       name: 'R.K. Quick Plumbing Services',
@@ -88,12 +218,25 @@ class ProfessionalModel {
           'Consistently rated 5 stars for pipe leakage sealing and urgent bathroom drainage blocks.',
       isSaved: true,
       services: [
-        ServicePricing(title: 'Leakage Inspection', price: '₹199'),
-        ServicePricing(title: 'Tap & Faucet Replacement', price: '₹299'),
-        ServicePricing(title: 'Drainage Unclogging', price: '₹499'),
-        ServicePricing(title: 'Water Tank & Pipe Overhaul', price: '₹899'),
+        ServicePricing(
+          title: 'Leakage Inspection',
+          price: '₹199',
+        ),
+        ServicePricing(
+          title: 'Tap & Faucet Replacement',
+          price: '₹299',
+        ),
+        ServicePricing(
+          title: 'Drainage Unclogging',
+          price: '₹499',
+        ),
+        ServicePricing(
+          title: 'Water Tank & Pipe Overhaul',
+          price: '₹899',
+        ),
       ],
     ),
+
     ProfessionalModel(
       id: 'pro_3',
       name: 'CoolCare AC Solutions',
@@ -114,12 +257,25 @@ class ProfessionalModel {
           'AI verified: Specializes in split and inverter AC compressor repair. Genuine spares guarantee.',
       isSaved: true,
       services: [
-        ServicePricing(title: 'AC Jet Cleaning & Service', price: '₹499'),
-        ServicePricing(title: 'Cooling Gas Refill (R32/R410)', price: '₹1,499'),
-        ServicePricing(title: 'PCB Board Diagnostics & Repair', price: '₹1,200'),
-        ServicePricing(title: 'Compressor Replacement Support', price: '₹2,500'),
+        ServicePricing(
+          title: 'AC Jet Cleaning & Service',
+          price: '₹499',
+        ),
+        ServicePricing(
+          title: 'Cooling Gas Refill (R32/R410)',
+          price: '₹1,499',
+        ),
+        ServicePricing(
+          title: 'PCB Board Diagnostics & Repair',
+          price: '₹1,200',
+        ),
+        ServicePricing(
+          title: 'Compressor Replacement Support',
+          price: '₹2,500',
+        ),
       ],
     ),
+
     ProfessionalModel(
       id: 'pro_4',
       name: 'PowerFix Appliance Masters',
@@ -140,12 +296,25 @@ class ProfessionalModel {
           'Expertise in digital inverter motors and front-load washing machine drum alignment.',
       isSaved: false,
       services: [
-        ServicePricing(title: 'Appliance Diagnostics', price: '₹299'),
-        ServicePricing(title: 'Fridge Gas & Cooling Coil', price: '₹1,100'),
-        ServicePricing(title: 'Washing Machine Motor Repair', price: '₹950'),
-        ServicePricing(title: 'Microwave Magnetron Fix', price: '₹850'),
+        ServicePricing(
+          title: 'Appliance Diagnostics',
+          price: '₹299',
+        ),
+        ServicePricing(
+          title: 'Fridge Gas & Cooling Coil',
+          price: '₹1,100',
+        ),
+        ServicePricing(
+          title: 'Washing Machine Motor Repair',
+          price: '₹950',
+        ),
+        ServicePricing(
+          title: 'Microwave Magnetron Fix',
+          price: '₹850',
+        ),
       ],
     ),
+
     ProfessionalModel(
       id: 'pro_5',
       name: 'VoltSafe Electrical Care',
@@ -166,17 +335,47 @@ class ProfessionalModel {
           'Recommended for smart home installations, inverter backups, and MCB breaker replacements.',
       isSaved: false,
       services: [
-        ServicePricing(title: 'Safety Load Audit', price: '₹399'),
-        ServicePricing(title: 'Inverter Wiring & Setup', price: '₹599'),
-        ServicePricing(title: 'Switchboard Replacement', price: '₹299'),
+        ServicePricing(
+          title: 'Safety Load Audit',
+          price: '₹399',
+        ),
+        ServicePricing(
+          title: 'Inverter Wiring & Setup',
+          price: '₹599',
+        ),
+        ServicePricing(
+          title: 'Switchboard Replacement',
+          price: '₹299',
+        ),
       ],
     ),
   ];
 }
 
+// ============================================================
+// SERVICE PRICING
+// ============================================================
+
 class ServicePricing {
   final String title;
   final String price;
 
-  const ServicePricing({required this.title, required this.price});
+  const ServicePricing({
+    required this.title,
+    required this.price,
+  });
+
+  factory ServicePricing.fromMap(Map<String, dynamic> data) {
+    return ServicePricing(
+      title: data['title']?.toString() ?? '',
+      price: data['price']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'price': price,
+    };
+  }
 }

@@ -32,13 +32,27 @@ class _SearchHistoryScreenState extends State<SearchHistoryScreen> {
   ];
 
   @override
-  void initState() {
+  @override
+void initState() {
     super.initState();
-    _items = List.from(SearchHistoryItem.sampleHistory);
+
+    _items = List.from(SearchHistoryItem.historyNotifier.value);
+
+    SearchHistoryItem.historyNotifier.addListener(_historyChanged);
+  }
+
+  void _historyChanged() {
+    if (!mounted) return;
+
+    setState(() {
+      _items = List.from(SearchHistoryItem.historyNotifier.value);
+    });
   }
 
   @override
+  @override
   void dispose() {
+    SearchHistoryItem.historyNotifier.removeListener(_historyChanged);
     _filterController.dispose();
     super.dispose();
   }
@@ -82,7 +96,7 @@ class _SearchHistoryScreenState extends State<SearchHistoryScreen> {
               ),
               onPressed: () {
                 Navigator.pop(context);
-                setState(() => _items.clear());
+                SearchHistoryItem.clearHistory();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('All search history cleared.'),
@@ -100,9 +114,7 @@ class _SearchHistoryScreenState extends State<SearchHistoryScreen> {
 
   void _deleteItem(SearchHistoryItem item) {
     final index = _items.indexOf(item);
-    setState(() {
-      _items.remove(item);
-    });
+    SearchHistoryItem.deleteHistory(item);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

@@ -9,6 +9,10 @@ import '../history/search_history_screen.dart';
 import '../notifications/notifications_screen.dart';
 import '../profile/profile_screen.dart';
 import '../saved_professionals/saved_professionals_screen.dart';
+import '../services/service_screen.dart';
+import '../../models/search_history_model.dart';
+
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -40,25 +44,21 @@ class _HomeScreenState extends State<HomeScreen> {
       'title': 'Electrical',
       'subtitle': 'Fans, lights & wiring',
       'icon': Icons.electrical_services_rounded,
-      'problem': 'There is an electrical problem in my home',
     },
     {
       'title': 'Plumbing',
       'subtitle': 'Leaks & water issues',
       'icon': Icons.water_drop_rounded,
-      'problem': 'There is a plumbing or water leakage problem',
     },
     {
       'title': 'AC Repair',
       'subtitle': 'Cooling & maintenance',
       'icon': Icons.ac_unit_rounded,
-      'problem': 'My AC is running but not cooling properly',
     },
     {
       'title': 'Appliances',
       'subtitle': 'TV, fridge & more',
       'icon': Icons.kitchen_rounded,
-      'problem': 'My home appliance is not working properly',
     },
   ];
 
@@ -155,17 +155,20 @@ class _HomeScreenState extends State<HomeScreen> {
     if (problem.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Please describe your home problem first.',
-          ),
+          content: Text('Please describe your home problem first.'),
           behavior: SnackBarBehavior.floating,
         ),
       );
-
       return;
     }
 
-    // Save to recent searches if it is not already there.
+    // SAVE TO SEARCH HISTORY
+    SearchHistoryItem.addHistory(
+      problem: problem,
+      category: 'Recent Diagnosis',
+    );
+
+    // SAVE TO HOME SCREEN RECENT SEARCHES
     final alreadyExists = _recentProblems.any(
       (item) =>
           item['problem'].toString().toLowerCase() ==
@@ -183,7 +186,6 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
 
-        // Keep only the latest 5 searches.
         if (_recentProblems.length > 5) {
           _recentProblems.removeLast();
         }
@@ -198,11 +200,15 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============================================================
 
   void _selectQuickService(Map<String, dynamic> service) {
-    final problem = service['problem'] as String;
-
-    _problemController.text = problem;
-
-    _openDiagnosis(problem);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ServiceScreen(
+          title: service['title'] as String,
+          subtitle: service['subtitle'] as String,
+          icon: service['icon'] as IconData,
+        ),
+      ),
+    );
   }
 
   // ============================================================
@@ -256,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 _buildSectionHeader(
                   'Quick Services',
-                  'Choose a common problem',
+                  '',
                 ),
 
                 const SizedBox(height: 14),
@@ -279,9 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 _buildRecentSearches(),
 
-                const SizedBox(height: 26),
-
-                _buildTrustBanner(),
+                
               ],
             ),
           ),
@@ -436,11 +440,11 @@ class _HomeScreenState extends State<HomeScreen> {
         color: AppColors.card,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(
-          color: AppColors.border.withOpacity(0.45),
+          color: AppColors.border.withValues(alpha: 0.45),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.20),
+            color: Colors.black.withValues(alpha: 0.20),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -456,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 width: 38,
                 height: 38,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.14),
+                  color: AppColors.primary.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -510,7 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.background,
               borderRadius: BorderRadius.circular(17),
               border: Border.all(
-                color: AppColors.border.withOpacity(0.45),
+                color: AppColors.border.withValues(alpha: 0.45),
               ),
             ),
 
@@ -550,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     hintStyle: TextStyle(
                       color: AppColors.textSecondary
-                          .withOpacity(0.75),
+                          .withValues(alpha: 0.75),
                       fontSize: 13.5,
                       height: 1.4,
                     ),
@@ -584,7 +588,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   bottom: 10,
                   child: Material(
                     color: AppColors.primary
-                        .withOpacity(0.13),
+                        .withValues(alpha: 0.13),
                     borderRadius:
                         BorderRadius.circular(12),
 
@@ -729,7 +733,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
         itemCount: _quickServices.length,
 
-        separatorBuilder: (_, __) =>
+        separatorBuilder: (_, _) =>
             const SizedBox(width: 12),
 
         itemBuilder: (context, index) {
@@ -779,7 +783,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             border: Border.all(
               color: AppColors.border
-                  .withOpacity(0.4),
+                  .withValues(alpha: 0.4),
             ),
           ),
 
@@ -794,7 +798,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 decoration: BoxDecoration(
                   color: AppColors.primary
-                      .withOpacity(0.13),
+                      .withValues(alpha: 0.13),
 
                   borderRadius:
                       BorderRadius.circular(14),
@@ -899,7 +903,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             border: Border.all(
               color: AppColors.border
-                  .withOpacity(0.35),
+                  .withValues(alpha: 0.35),
             ),
           ),
 
@@ -911,7 +915,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 decoration: BoxDecoration(
                   color: AppColors.primary
-                      .withOpacity(0.10),
+                      .withValues(alpha: 0.10),
 
                   borderRadius:
                       BorderRadius.circular(13),
@@ -981,94 +985,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // TRUST BANNER
   // ============================================================
 
-  Widget _buildTrustBanner() {
-    return Container(
-      padding:
-          const EdgeInsets.all(18),
-
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary
-                .withOpacity(0.20),
-            AppColors.secondary
-                .withOpacity(0.08),
-          ],
-        ),
-
-        borderRadius:
-            BorderRadius.circular(20),
-
-        border: Border.all(
-          color: AppColors.primary
-              .withOpacity(0.20),
-        ),
-      ),
-
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-
-            decoration: BoxDecoration(
-              color: AppColors.primary
-                  .withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-
-            child: const Icon(
-              Icons.verified_rounded,
-              color: AppColors.primary,
-              size: 23,
-            ),
-          ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-
-              children: [
-                Text(
-                  'Find trusted professionals',
-
-                  style: TextStyle(
-                    color:
-                        AppColors.textPrimary,
-                    fontSize: 13,
-                    fontWeight:
-                        FontWeight.w700,
-                  ),
-                ),
-
-                const SizedBox(height: 4),
-
-                Text(
-                  'Get reliable pros near you after diagnosis.',
-
-                  style: TextStyle(
-                    color:
-                        AppColors.textSecondary,
-                    fontSize: 11,
-                    height: 1.3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const Icon(
-            Icons.arrow_forward_rounded,
-            color: AppColors.primary,
-            size: 20,
-          ),
-        ],
-      ),
-    );
-  }
+  
 
   // ============================================================
   // BOTTOM NAVIGATION

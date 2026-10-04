@@ -4,6 +4,8 @@ import '../../core/theme/app_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../home/home_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../admin/admin_dashboard_screen.dart';
 
 class _Brand {
   static const blue = Color(0xFF3B82F6);
@@ -179,25 +181,37 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
     }
   }
 
-  void _onAuthenticated() {
+  Future<void> _onAuthenticated() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          _isLogin
-              ? 'Welcome back!'
-              : 'Account created successfully!',
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      final isAdmin =
+          userDoc.exists && userDoc.data()?['role'] == 'admin';
+
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) =>
+              isAdmin ? const AdminDashboardScreen() : const HomeScreen(),
         ),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
-    );
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const HomeScreen(),
+        ),
+      );
+    }
   }
 
   void _onContinueAsGuest() {
@@ -490,7 +504,7 @@ class _Header extends StatelessWidget {
           width: 56,
           height: 56,
           decoration: BoxDecoration(
-            color: _Brand.blue.withOpacity(0.1),
+            color: _Brand.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: const Icon(Icons.home_repair_service_rounded,
@@ -555,7 +569,7 @@ class _ModeToggle extends StatelessWidget {
                   borderRadius: BorderRadius.circular(_Brand.radius - 4),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
+                      color: Colors.black.withValues(alpha: 0.06),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
