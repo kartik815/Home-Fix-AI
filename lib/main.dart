@@ -10,12 +10,12 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/app_text_styles.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_radius.dart';
-
 import 'screens/auth/login_register_screen.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/admin/admin_dashboard_screen.dart';
 
 import 'services/global_notification_listener.dart';
+import 'services/saved_professionals_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +23,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  await SavedProfessionalsService.init();
   runApp(const HomePilotOnboardingApp());
 }
 

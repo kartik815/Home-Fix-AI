@@ -117,26 +117,29 @@ class ProfessionalCard extends StatelessWidget {
               ),
 
               // Interactive bookmark toggle
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onBookmarkToggle,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      transitionBuilder: (child, anim) =>
-                          ScaleTransition(scale: anim, child: child),
-                      child: Icon(
-                        isSaved
-                            ? Icons.bookmark_rounded
-                            : Icons.bookmark_border_rounded,
-                        key: ValueKey<bool>(isSaved),
-                        color: isSaved
-                            ? const Color(0xFF6C63FF)
-                            : const Color(0xFFAAAAAA),
-                        size: 24,
+              Tooltip(
+                message: isSaved ? 'Remove bookmark' : 'Bookmark',
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onBookmarkToggle,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, anim) =>
+                            ScaleTransition(scale: anim, child: child),
+                        child: Icon(
+                          isSaved
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
+                          key: ValueKey<bool>(isSaved),
+                          color: isSaved
+                              ? const Color(0xFF6C63FF)
+                              : const Color(0xFFAAAAAA),
+                          size: 24,
+                        ),
                       ),
                     ),
                   ),
