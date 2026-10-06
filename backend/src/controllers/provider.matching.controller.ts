@@ -1,10 +1,15 @@
 import { Request, Response } from "express";
-import {
-  matchProviders,
-  CustomerLocation,
-} from "../services/provider.matching.service";
+
 import { DiagnosisResult } from "../models/diagnosis.model";
-import { providers } from "../data/providers";
+
+import {
+  CustomerLocation,
+  matchProviders,
+} from "../services/provider.matching.service";
+
+import {
+  getProvidersFromMongoDB,
+} from "../services/provider.repository";
 
 export async function matchProvidersController(
   req: Request,
@@ -17,81 +22,55 @@ export async function matchProvidersController(
       budget,
     } = req.body ?? {};
 
-    // -----------------------------------------
-    // Validate diagnosis
-    // -----------------------------------------
-
-    if (!diagnosis || typeof diagnosis !== "object") {
+    if (!diagnosis) {
       return res.status(400).json({
         success: false,
-        message: "A diagnosis object is required.",
+        message: "Diagnosis is required.",
       });
     }
-
-    // -----------------------------------------
-    // Validate customer location
-    // -----------------------------------------
 
     if (
       !customerLocation ||
-      typeof customerLocation !== "object"
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Customer location is required.",
-      });
-    }
-
-    const location: CustomerLocation = {
-      latitude: Number(customerLocation.latitude),
-      longitude: Number(customerLocation.longitude),
-    };
-
-    if (
-      !Number.isFinite(location.latitude) ||
-      !Number.isFinite(location.longitude)
+      typeof customerLocation.latitude !== "number" ||
+      typeof customerLocation.longitude !== "number"
     ) {
       return res.status(400).json({
         success: false,
         message:
-          "Customer latitude and longitude must be valid numbers.",
+          "Valid customer latitude and longitude are required.",
       });
     }
 
-    // -----------------------------------------
-    // Validate budget
-    // -----------------------------------------
+    let parsedBudget: number | undefined;
 
-    let parsedBudget: number | null = null;
-
-    if (budget !== null && budget !== undefined) {
+    if (
+      budget !== undefined &&
+      budget !== null &&
+      budget !== ""
+    ) {
       parsedBudget = Number(budget);
 
-      if (
-        !Number.isFinite(parsedBudget) ||
-        parsedBudget < 0
-      ) {
+      if (Number.isNaN(parsedBudget)) {
         return res.status(400).json({
           success: false,
-          message: "Budget must be a valid positive number.",
+          message: "Budget must be a valid number.",
         });
       }
     }
 
-    // -----------------------------------------
-    // Run deterministic matching
-    // -----------------------------------------
+    const providers =
+      await getProvidersFromMongoDB();
+
+    console.log(
+      `Loaded ${providers.length} providers from MongoDB.`
+    );
 
     const matches = matchProviders(
       diagnosis as DiagnosisResult,
       providers,
-      location,
-      parsedBudget
+      customerLocation as CustomerLocation,
+      parsedBudget as number
     );
-
-    // -----------------------------------------
-    // Return results
-    // -----------------------------------------
 
     return res.status(200).json({
       success: true,
@@ -101,7 +80,10 @@ export async function matchProvidersController(
       },
     });
   } catch (error) {
-    console.error("Provider matching error:", error);
+    console.error(
+      "Provider matching error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,

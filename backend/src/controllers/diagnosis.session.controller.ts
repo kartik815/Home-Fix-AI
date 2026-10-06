@@ -5,7 +5,9 @@ import {
   CustomerLocation,
 } from "../services/provider.matching.service";
 
-import { providers } from "../data/providers";
+import {
+  getProvidersFromMongoDB,
+} from "../services/provider.repository";
 
 import {
   startDiagnosisSession,
@@ -287,6 +289,9 @@ export async function matchDiagnosisSession(
     // -----------------------------------------
     // Run matching engine
     // -----------------------------------------
+
+    const providers =
+      await getProvidersFromMongoDB();
 
     const matches = matchProviders(
       session.diagnosis,

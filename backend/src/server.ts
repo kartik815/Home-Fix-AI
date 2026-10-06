@@ -10,24 +10,36 @@ app.use(cors());
 app.use(express.json());
 
 async function startServer() {
-  const { default: diagnosisRoutes } =
-    await import("./routes/diagnosis.router");
+  try {
+    // Connect to MongoDB before starting the server
+    const { connectToMongoDB } =
+      await import("./config/mongodb");
 
-  const { default: diagnosisSessionRoutes } =
-    await import("./routes/diagnosis.session.router");
+    await connectToMongoDB();
 
-  const { default: providerMatchingRoutes } =
-    await import("./routes/provider.matching.router");
+    // Load routes after environment variables are available
+    const { default: diagnosisRoutes } =
+      await import("./routes/diagnosis.router");
 
-  app.use("/api/diagnosis", diagnosisRoutes);
-  app.use("/api/diagnosis", diagnosisSessionRoutes);
+    const { default: diagnosisSessionRoutes } =
+      await import("./routes/diagnosis.session.router");
 
-  app.use("/api/providers", providerMatchingRoutes);
+    const { default: providerMatchingRoutes } =
+      await import("./routes/provider.matching.router");
 
-  const PORT = process.env.PORT || 3000;
+    app.use("/api/diagnosis", diagnosisRoutes);
+    app.use("/api/diagnosis", diagnosisSessionRoutes);
+    app.use("/api/providers", providerMatchingRoutes);
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+    const PORT = process.env.PORT || 3000;
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
 }
+
 startServer();

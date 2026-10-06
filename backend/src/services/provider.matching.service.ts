@@ -672,159 +672,86 @@ function isProviderRelevant(
     diagnosis.subcategory ?? ""
   );
 
-  const category = normalize(
-    diagnosis.category
-  );
-
   const requiredSkills = diagnosis.requiredSkills.map(normalize);
 
-  /*
-   * --------------------------------------------------
-   * 1. Direct service match
-   * --------------------------------------------------
-   *
-   * Example:
-   *
-   * Washing Machine Repair
-   *        ↓
-   * Washing Machine Repair
-   *
-   * This is a strong relevance signal.
-   */
-  const directServiceMatch = provider.generalServices.some(
-    (service) => {
-      const normalizedService = normalize(service);
-
-      return (
-        normalizedService === requiredService ||
-        (
-          normalizedService.includes(requiredService) &&
-          requiredService.length > 0
-        ) ||
-        (
-          requiredService.includes(normalizedService) &&
-          normalizedService.length > 0
-        )
-      );
-    }
-  );
-
-  if (directServiceMatch) {
-    return true;
-  }
-
-  /*
-   * --------------------------------------------------
-   * 2. Equipment-specific expertise
-   * --------------------------------------------------
-   *
-   * Example:
-   *
-   * Provider expertise:
-   *   washing machine
-   *
-   * Diagnosis:
-   *   washing machine
-   */
-  const equipmentExpertiseMatch = provider.expertise.some(
-    (expertise) => {
-      return expertise.equipmentTypes.some(
-        (equipment) => {
-          const normalizedEquipment =
-            normalize(equipment);
-
-          return (
-            normalizedEquipment === subcategory &&
-            subcategory.length > 0
-          );
-        }
-      );
-    }
-  );
-
-  if (equipmentExpertiseMatch) {
-    return true;
-  }
-
-  /*
-   * --------------------------------------------------
-   * 3. Required skill match
-   * --------------------------------------------------
-   *
-   * Only accept a skill if it is an exact match.
-   *
-   * This prevents:
-   *
-   * "Basic Appliance Repair"
-   *
-   * from matching:
-   *
-   * "Appliance Repair"
-   */
-  const exactSkillMatch = provider.skills.some(
-    (providerSkill) => {
-      const normalizedProviderSkill =
-        normalize(providerSkill);
-
-      return requiredSkills.includes(
-        normalizedProviderSkill
-      );
-    }
+  // 1. Exact required skill
+  const exactSkillMatch = provider.skills.some((skill) =>
+    requiredSkills.includes(normalize(skill))
   );
 
   if (exactSkillMatch) {
     return true;
   }
 
-  /*
-   * --------------------------------------------------
-   * 4. Relevant past job
-   * --------------------------------------------------
-   *
-   * A provider can still be relevant if they have
-   * actually worked on the same type of equipment.
-   */
-  const pastJobMatch = provider.pastJobs.some(
-    (job) => {
-      const equipment =
-        normalize(job.equipmentType);
+  // 2. Strong equipment + service expertise
+  const expertiseMatch = provider.expertise.some((expertise) => {
+    const service = normalize(expertise.service);
 
-      const service =
-        normalize(job.service);
+    const serviceMatch =
+      requiredService.length > 0 &&
+      (
+        service === requiredService ||
+        service.includes(requiredService) ||
+        requiredService.includes(service)
+      );
 
-      const equipmentMatch =
-        subcategory.length > 0 &&
-        equipment === subcategory;
+    const equipmentMatch =
+      subcategory.length > 0 &&
+      expertise.equipmentTypes.some(
+        (equipment) =>
+          normalize(equipment) === subcategory
+      );
 
-      const serviceMatch =
-        requiredService.length > 0 &&
-        (
-          service === requiredService ||
-          service.includes(requiredService) ||
-          requiredService.includes(service)
-        );
+    return serviceMatch && equipmentMatch;
+  });
 
-      return equipmentMatch || serviceMatch;
-    }
-  );
+  if (expertiseMatch) {
+    return true;
+  }
+
+  // 3. Relevant past job
+  const pastJobMatch = provider.pastJobs.some((job) => {
+    const equipment = normalize(job.equipmentType);
+    const service = normalize(job.service);
+
+    const equipmentMatch =
+      subcategory.length > 0 &&
+      equipment === subcategory;
+
+    const serviceMatch =
+      requiredService.length > 0 &&
+      (
+        service === requiredService ||
+        service.includes(requiredService) ||
+        requiredService.includes(service)
+      );
+
+    return equipmentMatch && serviceMatch;
+  });
 
   if (pastJobMatch) {
     return true;
   }
 
-  /*
-   * --------------------------------------------------
-   * 5. Category-level fallback
-   * --------------------------------------------------
-   *
-   * Only use this for genuinely broad services.
-   *
-   * Example:
-   *   Home Maintenance
-   *
-   * We don't want a generic provider to qualify
-   * automatically for a specialized appliance problem.
-   */
+  // 4. Equipment-specific expertise even when service wording differs
+  const equipmentOnlyMatch = provider.expertise.some(
+    (expertise) =>
+      subcategory.length > 0 &&
+      expertise.equipmentTypes.some(
+        (equipment) =>
+          normalize(equipment) === subcategory
+      )
+  );
+
+  if (equipmentOnlyMatch) {
+    return true;
+  }
+
+  // 5. Broad categories only
+  const category = normalize(
+    diagnosis.category
+  );
+
   if (
     category === "other" ||
     category === "unknown"
