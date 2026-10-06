@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../models/professional_model.dart';
+import '../../services/saved_professionals_service.dart';
 
 class ProfessionalDetailsScreen extends StatefulWidget {
   final ProfessionalModel professional;
@@ -26,7 +27,7 @@ class _ProfessionalDetailsScreenState
   @override
   void initState() {
     super.initState();
-    _isSaved = widget.professional.isSaved;
+    _isSaved = SavedProfessionalsService.isSaved(widget.professional.id);
   }
 
   // ---------------------------------------------------------------------------
@@ -244,9 +245,11 @@ class _ProfessionalDetailsScreenState
             ),
             onPressed: () async {
               final wasSaved = _isSaved;
+              final newStatus = await SavedProfessionalsService.toggleBookmark(pro.id);
+              if (!mounted) return;
 
               setState(() {
-                _isSaved = !_isSaved;
+                _isSaved = newStatus;
                 pro.isSaved = _isSaved;
               });
 
@@ -263,6 +266,7 @@ class _ProfessionalDetailsScreenState
 
               final messenger = ScaffoldMessenger.maybeOf(context);
               if (messenger != null) {
+                messenger.clearSnackBars();
                 messenger.showSnackBar(
                   SnackBar(
                     content: Text(
@@ -270,10 +274,8 @@ class _ProfessionalDetailsScreenState
                           ? 'Saved to Bookmarks'
                           : 'Removed from Bookmarks',
                     ),
-                    duration:
-                        const Duration(seconds: 1),
-                    behavior:
-                        SnackBarBehavior.floating,
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
                   ),
                 );
               }

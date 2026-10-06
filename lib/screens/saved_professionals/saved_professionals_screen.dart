@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../models/professional_model.dart';
+import '../../services/saved_professionals_service.dart';
 import '../maps/nearby_professionals_map_screen.dart';
 import 'professional_card.dart';
 
@@ -20,17 +22,39 @@ class SavedProfessionalsScreen extends StatefulWidget {
 }
 
 class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
-  void _toggleBookmark(ProfessionalModel pro) {
-    setState(() {
-      pro.isSaved = !pro.isSaved;
-    });
+  Timer? _snackBarTimer;
+  ScaffoldMessengerState? _scaffoldMessenger;
 
-    final messenger = ScaffoldMessenger.of(context);
+  @override
+  void initState() {
+    super.initState();
+    SavedProfessionalsService.init().then((_) {
+      if (mounted) setState(() {});
+    });
+    SavedProfessionalsService.savedNotifier.addListener(_onSavedChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _scaffoldMessenger = ScaffoldMessenger.maybeOf(context);
+  }
+
+  void _onSavedChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _toggleBookmark(ProfessionalModel pro) async {
+    final willBeSaved = !SavedProfessionalsService.isSaved(pro.id);
+    await SavedProfessionalsService.setSaved(pro.id, willBeSaved);
+
+    if (!mounted) return;
+    final messenger = _scaffoldMessenger ?? ScaffoldMessenger.of(context);
     messenger.clearSnackBars();
     final controller = messenger.showSnackBar(
       SnackBar(
         content: Text(
-          pro.isSaved
+          willBeSaved
               ? 'Saved ${pro.name} to bookmarks'
               : 'Removed ${pro.name} from saved',
         ),
@@ -42,10 +66,8 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
         action: SnackBarAction(
           label: 'Undo',
           textColor: const Color(0xFF8B80FF),
-          onPressed: () {
-            setState(() {
-              pro.isSaved = !pro.isSaved;
-            });
+          onPressed: () async {
+            await SavedProfessionalsService.setSaved(pro.id, !willBeSaved);
             messenger.hideCurrentSnackBar();
           },
         ),
@@ -53,7 +75,8 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
     );
 
     // Guaranteed auto-dismiss fallback to ensure snackbar disappears
-    Future.delayed(const Duration(milliseconds: 2100), () {
+    _snackBarTimer?.cancel();
+    _snackBarTimer = Timer(const Duration(milliseconds: 2100), () {
       if (mounted) {
         controller.close();
       }
@@ -62,15 +85,16 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
 
   @override
   void dispose() {
+    _snackBarTimer?.cancel();
+    SavedProfessionalsService.savedNotifier.removeListener(_onSavedChanged);
     // Clear lingering snackbars when navigating away or switching tabs
-    ScaffoldMessenger.of(context).clearSnackBars();
+    _scaffoldMessenger?.clearSnackBars();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final savedList =
-        ProfessionalModel.sampleProfessionals.where((p) => p.isSaved).toList();
+    final savedList = SavedProfessionalsService.getSavedProfessionals();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -124,7 +148,7 @@ class _SavedProfessionalsScreenState extends State<SavedProfessionalsScreen> {
                     rating: pro.rating,
                     distance: pro.distance,
                     trustScore: pro.trustScore,
-                    isSaved: pro.isSaved,
+                    isSaved: SavedProfessionalsService.isSaved(pro.id),
                     onBookmarkToggle: () => _toggleBookmark(pro),
                     onAfterDetails: () => setState(() {}),
                   );
