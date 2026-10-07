@@ -27,9 +27,13 @@ async function startServer() {
     const { default: providerMatchingRoutes } =
       await import("./routes/provider.matching.router");
 
+    const { default: bookingRoutes } =
+    await import("./routes/booking.router");   
+
     app.use("/api/diagnosis", diagnosisRoutes);
     app.use("/api/diagnosis", diagnosisSessionRoutes);
     app.use("/api/providers", providerMatchingRoutes);
+    app.use("/api/bookings", bookingRoutes);
 
     const PORT = process.env.PORT || 3000;
 

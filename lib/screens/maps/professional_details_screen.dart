@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../models/professional_model.dart';
+import '../booking/booking_screen.dart';
 
 class ProfessionalDetailsScreen extends StatefulWidget {
   final ProfessionalModel professional;
@@ -119,92 +120,18 @@ class _ProfessionalDetailsScreenState
     }
   }
 
-  void _bookService() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.card,
-      barrierColor: Colors.black54,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+void _bookService() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => BookingScreen(
+        professional: widget.professional,
+        service: widget.professional.specialty,
+        problem: widget.professional.specialty,
       ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              16,
-              20,
-              24,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius:
-                        BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Icon(
-                  Icons.check_circle_outline_rounded,
-                  color: AppColors.success,
-                  size: 50,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Contact Request Sent to ${widget.professional.name}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'The technician has been notified with your issue details and will call you within 15 minutes.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          AppColors.primary,
-                      foregroundColor: Colors.white,
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(14),
-                      ),
-                      padding:
-                          const EdgeInsets.symmetric(
-                        vertical: 14,
-                      ),
-                    ),
-                    onPressed: () =>
-                        Navigator.pop(context),
-                    child: const Text('Done'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

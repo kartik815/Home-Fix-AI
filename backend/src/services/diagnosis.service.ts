@@ -351,29 +351,46 @@ ${answerHistory}
 YOUR TASK:
 Decide whether we have enough information to identify the appropriate type of professional and useful skills.
 
-If important information is still missing:
-1. Set isComplete to false.
-2. Ask exactly ONE question.
-3. Make the question natural and easy for a normal homeowner to answer.
-4. Ask only for information that materially helps identify the correct professional.
-5. Do not repeat a previous question.
-6. Update the diagnosis using the information already provided.
-7. Set questionPurpose to briefly explain why this question matters.
+If we already have enough information AND at least 2 questions
+have been answered:
 
-If we already have enough information:
 1. Set isComplete to true.
 2. Set question to null.
 3. Set questionPurpose to null.
 4. Update the diagnosis with all useful information collected.
 
+If fewer than 2 questions have been answered:
+
+1. Set isComplete to false.
+2. Ask exactly ONE useful question.
+3. Do not finish the diagnosis yet.
+4. Update the diagnosis using all information collected so far.
+
 IMPORTANT:
-- Do not ask unnecessary questions.
+
+- Ask at least 2 useful questions before completing the diagnosis.
+- Do NOT complete the diagnosis immediately after the initial problem
+  description.
+- Even if the problem seems specific, ask additional questions that
+  materially improve professional matching.
 - Prefer specific questions over generic questions.
-- Do not ask multiple questions in one question.
-- Do not ask the user to perform dangerous electrical, gas, structural, or mechanical procedures.
+- Do not repeat a previous question.
+- Ask exactly ONE question at a time.
+- Do not ask unnecessary questions.
+- Useful questions may include:
+  - appliance model
+  - appliance type or configuration
+  - error codes
+  - important symptoms
+  - whether a relevant function still works
+  - relevant usage or installation details
+- Do not ask questions that do not improve professional matching.
+- Do not ask the user to perform dangerous electrical, gas, structural,
+  or mechanical procedures.
 - Do not claim that a particular component has definitely failed.
-- The system should normally finish within 3-6 questions.
-- If the diagnosis is already sufficiently specific, finish early.
+- After at least 2 questions have been answered, complete the diagnosis
+  if enough information is available.
+- The diagnosis should normally finish within 2-4 questions.
 `;
 
   const contents = [

@@ -3,6 +3,7 @@ import { Provider } from "../models/provider.model";
 import {
   MatchScoreBreakdown,
   ProviderMatch,
+  ProviderSummary,
 } from "../models/provider.match.model";
 
 /*
@@ -610,26 +611,54 @@ export function calculateProviderMatch(
     breakdown.budget *
       WEIGHTS.budget;
 
-  return {
-    providerId: provider.id,
+const providerSummary: ProviderSummary = {
+  id: provider.id,
+  name: provider.name,
+  type: provider.type,
+  phone: provider.phone,
 
-    score: Number(
-      score.toFixed(2)
-    ),
+  latitude: provider.latitude,
+  longitude: provider.longitude,
+  serviceRadiusKm: provider.serviceRadiusKm,
 
-    breakdown,
+  generalServices: provider.generalServices,
+  skills: provider.skills,
 
-    distanceKm,
+  yearsExperience: provider.yearsExperience,
+  totalJobs: provider.totalJobs,
 
-    matchedSkills:
-      skillResult.matchedSkills,
+  rating: provider.rating,
+  reviewCount: provider.reviewCount,
 
-    matchedExpertise:
-      expertiseResult.matchedExpertise,
+  inspectionFee: provider.inspectionFee,
+  minimumPrice: provider.minimumPrice,
+  maximumPrice: provider.maximumPrice,
 
-    similarJobs:
-      similarJobResult.similarJobs,
-  };
+  available: provider.available,
+};
+
+return {
+  providerId: provider.id,
+
+  provider: providerSummary,
+
+  score: Number(
+    score.toFixed(2)
+  ),
+
+  breakdown,
+
+  distanceKm,
+
+  matchedSkills:
+    skillResult.matchedSkills,
+
+  matchedExpertise:
+    expertiseResult.matchedExpertise,
+
+  similarJobs:
+    similarJobResult.similarJobs,
+};
 }
 
 export interface CustomerLocation {
