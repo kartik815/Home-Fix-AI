@@ -41,6 +41,8 @@ dependencies:
   google_maps_flutter: ^2.18.1
   url_launcher: ^6.3.2
   geolocator: ^14.1.1
+  google_sign_in: 6.2.2
+  speech_to_text: ^7.5.0
 
 dev_dependencies:
   flutter_test:

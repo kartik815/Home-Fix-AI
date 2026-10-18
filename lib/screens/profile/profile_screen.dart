@@ -37,11 +37,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return handle[0].toUpperCase() + handle.substring(1);
     }
 
-    return 'Kuldeep Devarasetty';
+    return 'Guest Account';
   }
 
   String get _userEmail {
-    return _user?.email ?? 'kuldeep.dev@homepilot.ai';
+    return _user?.email ?? 'guest user';
   }
 
   void _showAddressDialog() {

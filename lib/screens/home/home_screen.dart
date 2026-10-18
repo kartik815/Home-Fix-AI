@@ -11,6 +11,7 @@ import '../profile/profile_screen.dart';
 import '../saved_professionals/saved_professionals_screen.dart';
 import '../services/service_screen.dart';
 import '../../models/search_history_model.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 
 
@@ -21,7 +22,24 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> 
+        with TickerProviderStateMixin{
+
+  @override
+  void initState() {
+    super.initState();
+
+    _micAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+      lowerBound: 0.9,
+      upperBound: 1.2,
+    );
+  }
+
+
+                    
+
   // ============================================================
   // CONTROLLERS
   // ============================================================
@@ -84,15 +102,23 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _isListening = false;
+  bool _speechAvailable = false;
+
+  late final AnimationController _micAnimationController;
   // ============================================================
   // LIFECYCLE
   // ============================================================
 
   @override
-  void dispose() {
-    _problemController.dispose();
-    super.dispose();
-  }
+  @override
+void dispose() {
+  _problemController.dispose();
+  _speech.stop();
+  _micAnimationController.dispose();
+  super.dispose();
+}
 
   // ============================================================
   // USER NAME
@@ -112,6 +138,75 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return 'there';
   }
+
+  
+Future<void> _startVoiceInput() async {
+  if (_isListening) {
+  await _speech.stop();
+  _micAnimationController.stop();
+  _micAnimationController.value = 1.0;
+
+  if (mounted) {
+    setState(() => _isListening = false);
+  }
+  return;
+}
+
+  _speechAvailable = await _speech.initialize(
+    onStatus: (status) {
+      if (!mounted) return;
+
+      setState(() {
+        _isListening = status == 'listening';
+      });
+
+      if (status == 'listening') {
+        _micAnimationController.repeat(reverse: true);
+      } else {
+        _micAnimationController.stop();
+        _micAnimationController.value = 1.0;
+      }
+    },
+    onError: (error) {
+      if (mounted) {
+        setState(() => _isListening = false);
+      }
+    },
+  );
+
+  if (!_speechAvailable) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Speech recognition is unavailable.'),
+      ),
+    );
+    return;
+  }
+
+  await _speech.listen(
+    listenFor: const Duration(minutes: 5),
+    pauseFor: const Duration(seconds: 10),
+    onResult: (result) {
+      if (!mounted) return;
+
+      setState(() {
+        _problemController.text = result.recognizedWords;
+        _problemController.selection = TextSelection.collapsed(
+          offset: _problemController.text.length,
+        );
+      });
+    },
+  );
+
+  if (mounted) {
+    setState(() => _isListening = true);
+  }
+}
+
+
+
 
   // ============================================================
   // OPEN DIAGNOSIS SCREEN
@@ -593,31 +688,25 @@ class _HomeScreenState extends State<HomeScreen> {
                         BorderRadius.circular(12),
 
                     child: InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Voice input will be connected soon.',
-                            ),
-                            behavior:
-                                SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
+                      onTap: _startVoiceInput,
 
                       borderRadius:
                           BorderRadius.circular(12),
 
-                      child: const SizedBox(
-                        width: 42,
-                        height: 42,
-                        child: Icon(
-                          Icons.mic_none_rounded,
-                          color: AppColors.primary,
-                          size: 21,
+                      
+                        child: ScaleTransition(
+                          scale: _micAnimationController,
+                          child: Icon(
+                            _isListening
+                                ? Icons.mic_rounded
+                                : Icons.mic_none_rounded,
+                            color: _isListening
+                                ? Colors.redAccent
+                                : AppColors.primary,
+                            size: 21,
+                          ),
                         ),
-                      ),
+
                     ),
                   ),
                 ),
