@@ -11,41 +11,33 @@ export async function connectToMongoDB(): Promise<Db> {
   }
 
   const mongoUri = process.env.MONGODB_URI;
-
   if (!mongoUri) {
-    throw new Error("MONGODB_URI is not defined in .env");
+    throw new Error("MONGODB_URI is not configured.");
   }
 
-  client = new MongoClient(mongoUri);
+  const newClient = new MongoClient(mongoUri);
+  await newClient.connect();
 
-  await client.connect();
+  const connectedDatabase = newClient.db(databaseName);
+  await connectedDatabase.command({ ping: 1 });
 
-  database = client.db(databaseName);
-
-  await database.command({ ping: 1 });
-
+  client = newClient;
+  database = connectedDatabase;
   console.log(`Connected to MongoDB database: ${databaseName}`);
 
-  return database;
+  return connectedDatabase;
 }
 
 export function getMongoDB(): Db {
   if (!database) {
-    throw new Error(
-      "MongoDB is not connected. Call connectToMongoDB() first."
-    );
+    throw new Error("MongoDB is not connected.");
   }
 
   return database;
 }
 
 export async function closeMongoDB(): Promise<void> {
-  if (client) {
-    await client.close();
-    client = null;
-  }
-
+  await client?.close();
+  client = null;
   database = null;
-
-  console.log("MongoDB connection closed.");
 }

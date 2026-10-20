@@ -5,6 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../admin/admin_dashboard_screen.dart';
 import '../home/home_screen.dart';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:google_sign_in/google_sign_in.dart';
+
+
 class _Brand {
   static const blue = Color(0xFF3B82F6);
   static const ink = Color(0xFF1F2937);
@@ -185,6 +189,61 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
     }
   }
 
+  
+Future<void> _signInWithGoogle() async {
+  if (_submitting) return;
+
+  setState(() => _submitting = true);
+
+  try {
+    UserCredential userCredential;
+
+    if (kIsWeb) {
+      final provider = GoogleAuthProvider();
+      userCredential =
+          await FirebaseAuth.instance.signInWithPopup(provider);
+    } else {
+      final GoogleSignInAccount? googleUser =
+          await GoogleSignIn().signIn();
+
+      if (googleUser == null) {
+        if (mounted) {
+          setState(() => _submitting = false);
+        }
+        return;
+      }
+
+      final googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      userCredential = await FirebaseAuth.instance
+          .signInWithCredential(credential);
+    }
+
+    if (userCredential.user != null) {
+      if (!mounted) return;
+
+      setState(() => _submitting = false);
+      await _onAuthenticated();
+    }
+  } catch (e) {
+    if (!mounted) return;
+
+    setState(() => _submitting = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Google sign-in failed. Please try again.'),
+      ),
+    );
+  }
+}
+
+
   Future<void> _onAuthenticated() async {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -218,9 +277,17 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
     }
   }
 
-  void _onContinueAsGuest() {
+  
+  Future<void> _onContinueAsGuest() async {
+    // Clear any previously signed-in Firebase account.
+    await FirebaseAuth.instance.signOut();
+
+    if (!mounted) return;
+
+    // Open HomeScreen directly in guest mode.
     Navigator.of(context).pushReplacementNamed('/home');
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -470,15 +537,16 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
                     ),
                     const SizedBox(height: 20),
 
+
                     OutlinedButton.icon(
-                      onPressed: _onContinueAsGuest,
+                      onPressed: _submitting ? null : _signInWithGoogle,
                       icon: const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 18,
-                        color: _Brand.ink,
+                        Icons.g_mobiledata_rounded,
+                        size: 28,
+                        color: Colors.blue,
                       ),
                       label: const Text(
-                        'Continue as Guest',
+                        'Continue with Google',
                         style: TextStyle(
                           color: _Brand.ink,
                           fontWeight: FontWeight.w600,
@@ -492,7 +560,9 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+
+                    const SizedBox(height: 12),
+
                   ],
                 ),
               ),

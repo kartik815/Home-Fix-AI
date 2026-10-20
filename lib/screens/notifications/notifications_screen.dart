@@ -180,6 +180,85 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _clearAllNotifications() async {
+    final user = _currentUser;
+
+    if (user == null) {
+      return;
+    }
+
+    // Confirm before deleting everything
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.card,
+        title: const Text(
+          'Clear all notifications?',
+          style: TextStyle(color: AppColors.textPrimary),
+        ),
+        content: const Text(
+          'This will permanently delete all your notifications.',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Clear All',
+              style: TextStyle(color: AppColors.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      final query = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('notifications')
+          .get();
+
+      if (query.docs.isEmpty) {
+        return;
+      }
+
+      final batch = FirebaseFirestore.instance.batch();
+
+      for (final document in query.docs) {
+        batch.delete(document.reference);
+      }
+
+      await batch.commit();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All notifications cleared.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to clear notifications.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   // ------------------------------------------------------------
   // MARK ONE NOTIFICATION AS READ
   // ------------------------------------------------------------
@@ -271,6 +350,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             tooltip: 'Mark all as read',
             icon: const Icon(
               Icons.done_all_rounded,
+              color: AppColors.primary,
+            ),
+          ),
+          IconButton(
+            onPressed: _clearAllNotifications,
+            tooltip: 'Clear all notifications',
+            icon: const Icon(
+              Icons.delete_outline_rounded,
               color: AppColors.primary,
             ),
           ),

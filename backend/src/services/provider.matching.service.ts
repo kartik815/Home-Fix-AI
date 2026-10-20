@@ -802,7 +802,8 @@ export function matchProviders(
   for (const provider of providers) {
     if (!isProviderRelevant(diagnosis, provider)) {
       continue;
-    }    
+    }
+
     // Never recommend unavailable providers.
     if (!provider.available) {
       continue;

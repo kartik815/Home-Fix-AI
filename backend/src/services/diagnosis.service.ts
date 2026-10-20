@@ -1,4 +1,4 @@
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { GoogleGenAI, Schema, Type } from "@google/genai";
 import { DiagnosisResult } from "../models/diagnosis.model";
 import {
   DiagnosisAnswer,
@@ -9,13 +9,8 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
-// Primary model
-const MODEL = "gemini-3.6-flash";
-
-// Fallback model if the primary model is unavailable
+const PRIMARY_MODEL = "gemini-3.6-flash";
 const FALLBACK_MODEL = "gemini-3.5-flash-lite";
-
-// Retry configuration
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 1000;
 
@@ -52,11 +47,11 @@ IMPORTANT RULES:
 - Do not recommend a specific provider.
 `;
 
-const DIAGNOSIS_SCHEMA = {
-  type: "object",
+const DIAGNOSIS_SCHEMA: Schema = {
+  type: Type.OBJECT,
   properties: {
     category: {
-      type: "string",
+      type: Type.STRING,
       enum: [
         "electrical",
         "plumbing",
@@ -71,66 +66,61 @@ const DIAGNOSIS_SCHEMA = {
       ],
     },
     subcategory: {
-      type: ["string", "null"],
+      type: Type.STRING,
+      nullable: true,
     },
     brand: {
-      type: ["string", "null"],
+      type: Type.STRING,
+      nullable: true,
     },
     model: {
-      type: ["string", "null"],
+      type: Type.STRING,
+      nullable: true,
     },
     problemSummary: {
-      type: "string",
+      type: Type.STRING,
     },
     symptoms: {
-      type: "array",
-      items: {
-        type: "string",
-      },
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
     },
     component: {
-      type: ["string", "null"],
+      type: Type.STRING,
+      nullable: true,
     },
     severity: {
-      type: "string",
+      type: Type.STRING,
       enum: ["low", "medium", "high", "critical", "unknown"],
     },
     urgency: {
-      type: "string",
+      type: Type.STRING,
       enum: ["normal", "soon", "urgent", "emergency", "unknown"],
     },
     requiredService: {
-      type: ["string", "null"],
+      type: Type.STRING,
+      nullable: true,
     },
     requiredSkills: {
-      type: "array",
-      items: {
-        type: "string",
-      },
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
     },
     knownInformation: {
-      type: "array",
+      type: Type.ARRAY,
       items: {
-        type: "object",
+        type: Type.OBJECT,
         properties: {
-          key: {
-            type: "string",
-          },
-          value: {
-            type: "string",
-          },
+          key: { type: Type.STRING },
+          value: { type: Type.STRING },
         },
         required: ["key", "value"],
       },
     },
     missingInformation: {
-      type: "array",
-      items: {
-        type: "string",
-      },
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
     },
     confidence: {
-      type: "number",
+      type: Type.NUMBER,
       minimum: 0,
       maximum: 1,
     },
@@ -153,18 +143,12 @@ const DIAGNOSIS_SCHEMA = {
   ],
 };
 
-const QUESTION_DECISION_SCHEMA = {
-  type: "object",
+const QUESTION_DECISION_SCHEMA: Schema = {
+  type: Type.OBJECT,
   properties: {
-    isComplete: {
-      type: "boolean",
-    },
-    question: {
-      type: ["string", "null"],
-    },
-    questionPurpose: {
-      type: ["string", "null"],
-    },
+    isComplete: { type: Type.BOOLEAN },
+    question: { type: Type.STRING, nullable: true },
+    questionPurpose: { type: Type.STRING, nullable: true },
     updatedDiagnosis: DIAGNOSIS_SCHEMA,
   },
   required: [
@@ -175,53 +159,33 @@ const QUESTION_DECISION_SCHEMA = {
   ],
 };
 
-/**
- * Returns true when the error is temporary and worth retrying.
- */
 function isRetryableError(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) {
+    return false;
+  }
+
   const candidate = error as {
-    status?: number;
-    error?: {
-      code?: number;
-      status?: string;
-    };
+    status?: unknown;
+    error?: { code?: unknown };
   };
-
-  const status = candidate?.status ?? candidate?.error?.code;
-
-  return (
-    status === 408 ||
-    status === 429 ||
-    status === 500 ||
-    status === 502 ||
-    status === 503 ||
-    status === 504
-  );
+  const status = Number(candidate.status ?? candidate.error?.code);
+  return [408, 429, 500, 502, 503, 504].includes(status);
 }
 
-/**
- * Wait before retrying.
- */
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function sleep(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
-/**
- * Generate Gemini content with retry + model fallback.
- */
-async function generateWithFallback(
-  contents: any,
-  responseSchema: any,
-  systemInstruction?: string
-) {
-  const models = [MODEL, FALLBACK_MODEL];
-  let lastError: unknown = null;
+async function generateJson<T>(
+  contents: string,
+  responseSchema: Schema,
+  systemInstruction: string
+): Promise<T> {
+  let lastError: unknown;
 
-  for (const model of models) {
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (const model of [PRIMARY_MODEL, FALLBACK_MODEL]) {
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
       try {
-        console.log(`Gemini request: model=${model}, attempt=${attempt + 1}`);
-
         const response = await ai.models.generateContent({
           model,
           contents,
@@ -229,9 +193,6 @@ async function generateWithFallback(
             responseMimeType: "application/json",
             responseSchema,
             systemInstruction,
-            thinkingConfig: {
-              thinkingLevel: ThinkingLevel.LOW,
-            },
           },
         });
 
@@ -239,8 +200,7 @@ async function generateWithFallback(
           throw new Error("Gemini returned an empty response.");
         }
 
-        console.log(`Gemini response successful using ${model}`);
-        return response;
+        return JSON.parse(response.text) as T;
       } catch (error) {
         lastError = error;
         console.error(
@@ -252,18 +212,10 @@ async function generateWithFallback(
           throw error;
         }
 
-        if (attempt === MAX_RETRIES) {
-          console.log(`Model ${model} unavailable after retries.`);
-          break;
+        if (attempt < MAX_RETRIES) {
+          const backoff = INITIAL_RETRY_DELAY_MS * 2 ** attempt;
+          await sleep(backoff + Math.floor(Math.random() * 500));
         }
-
-        // Exponential backoff: 1s → 2s → 4s
-        const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
-        const jitter = Math.floor(Math.random() * 500);
-        const totalDelay = delay + jitter;
-
-        console.log(`Retrying in ${totalDelay}ms...`);
-        await sleep(totalDelay);
       }
     }
   }
@@ -280,25 +232,12 @@ export async function analyzeProblem(
     throw new Error("Problem description cannot be empty.");
   }
 
-  const contents = [
-    {
-      role: "user",
-      parts: [
-        {
-          text: `USER'S HOME PROBLEM:\n\n${cleanedProblem}`,
-        },
-      ],
-    },
-  ];
-
   try {
-    const response = await generateWithFallback(
-      contents,
+    return await generateJson<DiagnosisResult>(
+      `USER'S HOME PROBLEM:\n\n${cleanedProblem}`,
       DIAGNOSIS_SCHEMA,
       SYSTEM_PROMPT
     );
-
-    return JSON.parse(response.text as string) as DiagnosisResult;
   } catch (error) {
     console.error("Gemini diagnosis error:", error);
     throw error;
@@ -320,7 +259,6 @@ export async function decideNextQuestion(
               `${index + 1}. Question: ${item.question}\nAnswer: ${item.answer}`
           )
           .join("\n\n");
-
   const previousQuestions =
     askedQuestions.length === 0
       ? "No questions have been asked yet."
@@ -329,12 +267,8 @@ export async function decideNextQuestion(
           .join("\n");
 
   const prompt = `
-The goal is NOT to perform a definitive medical, electrical, structural, or mechanical diagnosis.
-
-The goal is to collect enough useful information to identify:
-- the correct general service
-- the relevant professional skills
-- useful expertise for provider matching
+The goal is to identify the correct general service and useful professional skills,
+not to make a definitive technical diagnosis.
 
 The user originally said:
 "${originalProblem}"
@@ -348,72 +282,18 @@ ${previousQuestions}
 USER ANSWERS:
 ${answerHistory}
 
-YOUR TASK:
-Decide whether we have enough information to identify the appropriate type of professional and useful skills.
-
-If we already have enough information AND at least 2 questions
-have been answered:
-
-1. Set isComplete to true.
-2. Set question to null.
-3. Set questionPurpose to null.
-4. Update the diagnosis with all useful information collected.
-
-If fewer than 2 questions have been answered:
-
-1. Set isComplete to false.
-2. Ask exactly ONE useful question.
-3. Do not finish the diagnosis yet.
-4. Update the diagnosis using all information collected so far.
-
-IMPORTANT:
-
-- Ask at least 2 useful questions before completing the diagnosis.
-- Do NOT complete the diagnosis immediately after the initial problem
-  description.
-- Even if the problem seems specific, ask additional questions that
-  materially improve professional matching.
-- Prefer specific questions over generic questions.
-- Do not repeat a previous question.
-- Ask exactly ONE question at a time.
-- Do not ask unnecessary questions.
-- Useful questions may include:
-  - appliance model
-  - appliance type or configuration
-  - error codes
-  - important symptoms
-  - whether a relevant function still works
-  - relevant usage or installation details
-- Do not ask questions that do not improve professional matching.
-- Do not ask the user to perform dangerous electrical, gas, structural,
-  or mechanical procedures.
-- Do not claim that a particular component has definitely failed.
-- After at least 2 questions have been answered, complete the diagnosis
-  if enough information is available.
-- The diagnosis should normally finish within 2-4 questions.
+Decide whether enough information is available to identify the appropriate service.
+Ask exactly one useful, non-repeated question at a time. Ask at least two questions
+before completing, and normally finish within two to four questions. If fewer than
+two answers have been provided, set isComplete to false and ask a question. After
+two or more answers, complete when the available information is sufficient.
+Update the diagnosis using the original problem and all answers. Do not invent facts,
+recommend a provider, or ask the user to perform dangerous work.
 `;
 
-  const contents = [
-    {
-      role: "user",
-      parts: [
-        {
-          text: prompt,
-        },
-      ],
-    },
-  ];
-
-  try {
-    const response = await generateWithFallback(
-      contents,
-      QUESTION_DECISION_SCHEMA,
-      SYSTEM_PROMPT
-    );
-
-    return JSON.parse(response.text as string) as QuestionDecision;
-  } catch (error) {
-    console.error("Gemini question decision error:", error);
-    throw error;
-  }
+  return generateJson<QuestionDecision>(
+    prompt,
+    QUESTION_DECISION_SCHEMA,
+    SYSTEM_PROMPT
+  );
 }
