@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../maps/nearby_professionals_map_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -281,6 +282,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _openNotification(
+    DocumentSnapshot<Map<String, dynamic>> document,
+  ) async {
+    await _markAsRead(document);
+
+    final data = document.data();
+    final providerId = data?['providerId']?.toString();
+
+    if (!mounted || data?['type'] != 'professional' ||
+        providerId == null || providerId.isEmpty) {
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NearbyProfessionalsMapScreen(
+          focusedProviderId: providerId,
+        ),
+      ),
+    );
+  }
+
   // ------------------------------------------------------------
   // BUILD NOTIFICATION CARD
   // ------------------------------------------------------------
@@ -299,7 +322,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: GestureDetector(
-        onTap: () => _markAsRead(document),
+        onTap: () => _openNotification(document),
         child: NotificationCard(
           icon: _getNotificationIcon(type),
           title: title,

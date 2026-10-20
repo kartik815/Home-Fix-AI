@@ -184,10 +184,11 @@ void initState() {
   }
 
   // ---------------------------------------------------------------------------
-  // NOTIFY USERS WITHIN 10 KM
+  // NOTIFY CUSTOMERS, APPLYING THE 10 KM FILTER WHEN LOCATION IS AVAILABLE
   // ---------------------------------------------------------------------------
 
-  Future<void> _notifyNearbyUsers({
+  Future<void> _notifyCustomers({
+    required String providerId,
     required double providerLatitude,
     required double providerLongitude,
     required String providerName,
@@ -214,64 +215,67 @@ void initState() {
           userData['longitude'],
         );
 
-        // If the user doesn't have a valid location, skip them.
-        if (userLatitude == null || userLongitude == null) {
-          debugPrint(
-            'Skipping user ${userDoc.id}: '
-            'latitude/longitude missing or invalid.',
-          );
+        if (userData['role'] == 'admin') {
           continue;
         }
 
-        // Calculate distance between user and provider.
-        final distanceKm = _calculateDistanceKm(
-          userLatitude,
-          userLongitude,
-          providerLatitude,
-          providerLongitude,
-        );
-
-        debugPrint(
-          'USER LOCATION CHECK: '
-          'uid=${userDoc.id}, '
-          'userLat=$userLatitude, '
-          'userLng=$userLongitude, '
-          'providerLat=$providerLatitude, '
-          'providerLng=$providerLongitude, '
-          'distance=${distanceKm.toStringAsFixed(2)} km',
-        );
-
-        // Notify users within 10 km.
-        if (distanceKm <= 10) {
-          final notificationRef = firestore
-              .collection('users')
-              .doc(userDoc.id)
-              .collection('notifications')
-              .doc();
-
-          await notificationRef.set({
-            'title': '🔧 New Service Provider Added',
-            'message':
-                'A new $category service provider, '
-                '$providerName, has been added near you. '
-                'Check them out!',
-            'type': 'professional',
-            'isRead': false,
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-
-          notificationCount++;
+        // Customer locations are optional. Notify customers without one because
+        // their distance from the new provider cannot otherwise be determined.
+        if (userLatitude != null && userLongitude != null) {
+          final distanceKm = _calculateDistanceKm(
+            userLatitude,
+            userLongitude,
+            providerLatitude,
+            providerLongitude,
+          );
 
           debugPrint(
-            'NOTIFICATION CREATED for ${userDoc.id} '
-            '(${distanceKm.toStringAsFixed(2)} km away)',
+            'USER LOCATION CHECK: '
+            'uid=${userDoc.id}, '
+            'userLat=$userLatitude, '
+            'userLng=$userLongitude, '
+            'providerLat=$providerLatitude, '
+            'providerLng=$providerLongitude, '
+            'distance=${distanceKm.toStringAsFixed(2)} km',
+          );
+
+          if (distanceKm > 10) {
+            continue;
+          }
+        } else {
+          debugPrint(
+            'Notifying user ${userDoc.id}: '
+            'saved latitude/longitude is unavailable.',
           );
         }
+
+        final notificationRef = firestore
+            .collection('users')
+            .doc(userDoc.id)
+            .collection('notifications')
+            .doc();
+
+        await notificationRef.set({
+          'title': '🔧 New Service Provider Added',
+          'message':
+              'A new $category service provider, '
+              '$providerName, has been added. '
+              'Check them out!',
+          'type': 'professional',
+          'providerId': providerId,
+          'isRead': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        notificationCount++;
+
+        debugPrint(
+          'NOTIFICATION CREATED for ${userDoc.id}',
+        );
       }
 
       debugPrint(
-        'New provider notification sent to '
-        '$notificationCount nearby users.',
+        'New provider notification sent to $notificationCount customers.',
       );
     } catch (e) {
       debugPrint(
@@ -630,7 +634,14 @@ void initState() {
             _longitudeController.text.trim(),
           );
 
-      if (latitude == null || longitude == null) {
+      if (latitude == null ||
+          longitude == null ||
+          !latitude.isFinite ||
+          !longitude.isFinite ||
+          latitude < -90 ||
+          latitude > 90 ||
+          longitude < -180 ||
+          longitude > 180) {
         throw Exception(
           'Please enter valid latitude and longitude.',
         );
@@ -668,6 +679,8 @@ void initState() {
         'isVerified': _isVerified,
       };
 
+      String? createdProviderId;
+
       if (widget.providerId != null) {
         // EDIT EXISTING PROVIDER
         await FirebaseFirestore.instance
@@ -676,7 +689,7 @@ void initState() {
             .update(providerData);
       } else {
         // ADD NEW PROVIDER
-        await FirebaseFirestore.instance
+        final providerDocument = await FirebaseFirestore.instance
             .collection('professionals')
             .add({
           ...providerData,
@@ -689,6 +702,7 @@ void initState() {
           'aiReviewSummary': '',
           'createdAt': FieldValue.serverTimestamp(),
         });
+        createdProviderId = providerDocument.id;
       }
 
       // -----------------------------------------------------------------------
@@ -696,12 +710,13 @@ void initState() {
       // -----------------------------------------------------------------------
 
       if (widget.providerId == null) {
-        await _notifyNearbyUsers(
-        providerLatitude: latitude,
-        providerLongitude: longitude,
-        providerName: providerName,
-        category: _category,
-      );
+        await _notifyCustomers(
+          providerId: createdProviderId!,
+          providerLatitude: latitude,
+          providerLongitude: longitude,
+          providerName: providerName,
+          category: _category,
+        );
       }
 
       if (!mounted) {

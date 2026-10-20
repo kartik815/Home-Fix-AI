@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'firebase_options.dart';
 
@@ -16,6 +15,7 @@ import 'screens/home/home_screen.dart';
 import 'screens/admin/admin_dashboard_screen.dart';
 
 import 'services/global_notification_listener.dart';
+import 'services/user_profile_service.dart';
 
 
 void main() async {
@@ -86,12 +86,7 @@ class UserRoleGate extends StatelessWidget {
       return false;
     }
 
-    final document = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .get();
-
-    return document.exists && document.data()?['role'] == 'admin';
+    return UserProfileService.ensureProfile(user);
   }
 
   @override
@@ -104,6 +99,21 @@ class UserRoleGate extends StatelessWidget {
             backgroundColor: AppColors.background,
             body: Center(
               child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          debugPrint('Unable to initialize user profile: ${snapshot.error}');
+
+          return const Scaffold(
+            backgroundColor: AppColors.background,
+            body: Center(
+              child: Text(
+                'Unable to load your account profile. '
+                'Please check your connection and reopen the app.',
+                textAlign: TextAlign.center,
+              ),
             ),
           );
         }

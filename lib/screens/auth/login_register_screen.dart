@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../admin/admin_dashboard_screen.dart';
 import '../home/home_screen.dart';
+import '../../services/user_profile_service.dart';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
@@ -250,13 +250,7 @@ Future<void> _signInWithGoogle() async {
     if (user == null) return;
 
     try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      final isAdmin =
-          userDoc.exists && userDoc.data()?['role'] == 'admin';
+      final isAdmin = await UserProfileService.ensureProfile(user);
 
       if (!mounted) return;
 
@@ -267,7 +261,18 @@ Future<void> _signInWithGoogle() async {
         ),
       );
     } catch (e) {
+      debugPrint('Unable to initialize user profile: $e');
+
       if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Your account profile could not be set up. '
+            'Notifications may not work.',
+          ),
+        ),
+      );
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(

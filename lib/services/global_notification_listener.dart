@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
+import '../screens/maps/nearby_professionals_map_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
 
 class GlobalNotificationListener extends StatefulWidget {
@@ -164,10 +165,19 @@ class _GlobalNotificationListenerState
               _notificationOverlay = null;
             }
 
+            final providerId = data['providerId']?.toString();
+            final isNewProviderNotification =
+                data['type'] == 'professional' &&
+                    providerId != null &&
+                    providerId.isNotEmpty;
+
             widget.navigatorKey.currentState?.push(
               MaterialPageRoute(
-                builder: (_) =>
-                    const NotificationsScreen(),
+                builder: (_) => isNewProviderNotification
+                    ? NearbyProfessionalsMapScreen(
+                        focusedProviderId: providerId,
+                      )
+                    : const NotificationsScreen(),
               ),
             );
           },
