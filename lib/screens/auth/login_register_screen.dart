@@ -8,7 +8,6 @@ import '../../services/user_profile_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:google_sign_in/google_sign_in.dart';
 
-
 class _Brand {
   static const blue = Color(0xFF3B82F6);
   static const ink = Color(0xFF1F2937);
