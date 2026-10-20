@@ -13,11 +13,13 @@ import 'professional_details_screen.dart';
 class NearbyProfessionalsMapScreen extends StatefulWidget {
   final String? category;
   final String? initialProblem;
+  final String? focusedProviderId;
 
   const NearbyProfessionalsMapScreen({
     super.key,
     this.category,
     this.initialProblem,
+    this.focusedProviderId,
   });
 
   @override
@@ -30,6 +32,8 @@ class _NearbyProfessionalsMapScreenState
   // Map Controller
   GoogleMapController? _mapController;
   LatLng _userLocation = const LatLng(28.6139, 77.2090);
+  LatLng? _focusedProviderLocation;
+  String? _focusedProviderName;
   bool _isLoadingLocation = false;
 
   // Filter State
@@ -42,8 +46,7 @@ class _NearbyProfessionalsMapScreenState
   // Prevent duplicate Professional Found notifications
   bool _professionalNotificationCreated = false;
 
-  final PageController _pageController =
-      PageController(viewportFraction: 0.88);
+  final PageController _pageController = PageController(viewportFraction: 0.88);
 
   final List<String> _categories = [
     'All',
@@ -53,11 +56,7 @@ class _NearbyProfessionalsMapScreenState
     'Appliances',
   ];
 
-  final List<String> _radiusOptions = [
-    '2 km',
-    '5 km',
-    '10 km',
-  ];
+  final List<String> _radiusOptions = ['2 km', '5 km', '10 km'];
 
   // Dark Map Style JSON for Google Maps
   static const String _darkMapStyle = '''
@@ -84,17 +83,91 @@ class _NearbyProfessionalsMapScreenState
 
     _selectedCategory = widget.category ?? 'All';
     _syncTechniciansWithUserLocation(_userLocation);
+    if (widget.focusedProviderId != null) {
+      _loadFocusedProvider(widget.focusedProviderId!);
+    }
     _fetchLiveLocation();
+  }
+
+  Future<void> _loadFocusedProvider(String providerId) async {
+    try {
+      final provider = await FirebaseFirestore.instance
+          .collection('professionals')
+          .doc(providerId)
+          .get();
+
+      if (!provider.exists) {
+        _showFocusedProviderError(
+          'This service provider is no longer available.',
+        );
+        return;
+      }
+
+      final data = provider.data();
+      final latitude = _toDouble(data?['latitude']);
+      final longitude = _toDouble(data?['longitude']);
+
+      if (latitude == null ||
+          longitude == null ||
+          !latitude.isFinite ||
+          !longitude.isFinite ||
+          latitude < -90 ||
+          latitude > 90 ||
+          longitude < -180 ||
+          longitude > 180) {
+        _showFocusedProviderError(
+          'This provider does not have a valid map location.',
+        );
+        return;
+      }
+
+      final location = LatLng(latitude, longitude);
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _focusedProviderLocation = location;
+        _focusedProviderName = data?['name']?.toString() ?? 'Service Provider';
+      });
+
+      _mapController?.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: location, zoom: 16),
+        ),
+      );
+    } catch (error) {
+      debugPrint('Unable to load provider location: $error');
+      _showFocusedProviderError("Unable to load this provider's map location.");
+    }
+  }
+
+  void _showFocusedProviderError(String message) {
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+    );
+  }
+
+  double? _toDouble(dynamic value) {
+    if (value is num) {
+      return value.toDouble();
+    }
+    return double.tryParse(value?.toString() ?? '');
   }
 
   void _syncTechniciansWithUserLocation(LatLng userLoc) {
     // Realistic geographical offsets so technicians are distributed within 0.8 km - 3.5 km around user
     final offsets = [
-      const Offset(0.0052, 0.0048),   // ~0.8 km NE (Sharma Electricals)
-      const Offset(-0.0075, 0.0062),  // ~1.2 km NW (R.K. Quick Plumbing)
-      const Offset(0.0110, -0.0092),  // ~1.8 km SE (CoolCare AC Solutions)
+      const Offset(0.0052, 0.0048), // ~0.8 km NE (Sharma Electricals)
+      const Offset(-0.0075, 0.0062), // ~1.2 km NW (R.K. Quick Plumbing)
+      const Offset(0.0110, -0.0092), // ~1.8 km SE (CoolCare AC Solutions)
       const Offset(-0.0142, -0.0125), // ~2.4 km SW (PowerFix Appliance Masters)
-      const Offset(0.0185, 0.0160),   // ~3.1 km NE (VoltSafe Electrical Care)
+      const Offset(0.0185, 0.0160), // ~3.1 km NE (VoltSafe Electrical Care)
     ];
 
     for (int i = 0; i < ProfessionalModel.sampleProfessionals.length; i++) {
@@ -137,8 +210,7 @@ class _NearbyProfessionalsMapScreenState
     }
 
     try {
-      final serviceEnabled =
-          await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
 
       if (!serviceEnabled) {
         if (mounted) {
@@ -180,14 +252,13 @@ class _NearbyProfessionalsMapScreenState
           _isLoadingLocation = false;
         });
 
-        _mapController?.animateCamera(
-          CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: _userLocation,
-              zoom: 14.5,
+        if (widget.focusedProviderId == null) {
+          _mapController?.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(target: _userLocation, zoom: 14.5),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (_) {
       if (mounted) {
@@ -219,27 +290,21 @@ class _NearbyProfessionalsMapScreenState
           .doc(user.uid)
           .collection('notifications')
           .add({
-        'title': '👨‍🔧 Professional Found',
-        'message':
-            'We found $professionalCount professional${professionalCount == 1 ? '' : 's'} near you for $category.',
-        'type': 'professional',
-        'isRead': false,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+            'title': '👨‍🔧 Professional Found',
+            'message':
+                'We found $professionalCount professional${professionalCount == 1 ? '' : 's'} near you for $category.',
+            'type': 'professional',
+            'isRead': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
 
-      debugPrint(
-        'Professional Found notification created successfully.',
-      );
+      debugPrint('Professional Found notification created successfully.');
     } catch (e) {
-      debugPrint(
-        'Failed to create Professional Found notification: $e',
-      );
+      debugPrint('Failed to create Professional Found notification: $e');
     }
   }
 
-  void _notifyProfessionalsFound(
-    List<ProfessionalModel> pros,
-  ) {
+  void _notifyProfessionalsFound(List<ProfessionalModel> pros) {
     if (_professionalNotificationCreated || pros.isEmpty) {
       return;
     }
@@ -264,32 +329,28 @@ class _NearbyProfessionalsMapScreenState
   // FILTERED PROFESSIONALS
   // ---------------------------------------------------------------------------
 
- List<ProfessionalModel> _filterProfessionals(
-  List<ProfessionalModel> professionals,
-) {
-  // Keep all professionals visible.
-  // Only filter by service category.
-  if (_selectedCategory == 'All') {
-    return professionals;
-  }
+  List<ProfessionalModel> _filterProfessionals(
+    List<ProfessionalModel> professionals,
+  ) {
+    // Keep all professionals visible.
+    // Only filter by service category.
+    if (_selectedCategory == 'All') {
+      return professionals;
+    }
 
-  return professionals.where((pro) {
-    return pro.category.toLowerCase().contains(
-          _selectedCategory.toLowerCase(),
-        ) ||
-        _selectedCategory.toLowerCase().contains(
-          pro.category.toLowerCase(),
-        );
-  }).toList();
-}
+    return professionals.where((pro) {
+      return pro.category.toLowerCase().contains(
+            _selectedCategory.toLowerCase(),
+          ) ||
+          _selectedCategory.toLowerCase().contains(pro.category.toLowerCase());
+    }).toList();
+  }
 
   // ---------------------------------------------------------------------------
   // MAP MARKERS
   // ---------------------------------------------------------------------------
 
-  Set<Marker> _buildMarkers(
-    List<ProfessionalModel> pros,
-  ) {
+  Set<Marker> _buildMarkers(List<ProfessionalModel> pros) {
     final markers = <Marker>{};
 
     // User Location Marker
@@ -297,12 +358,8 @@ class _NearbyProfessionalsMapScreenState
       Marker(
         markerId: const MarkerId('user_location'),
         position: _userLocation,
-        infoWindow: const InfoWindow(
-          title: 'Your Location',
-        ),
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          BitmapDescriptor.hueAzure,
-        ),
+        infoWindow: const InfoWindow(title: 'Your Location'),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       ),
     );
 
@@ -314,18 +371,13 @@ class _NearbyProfessionalsMapScreenState
       markers.add(
         Marker(
           markerId: MarkerId(pro.id),
-          position: LatLng(
-            pro.latitude,
-            pro.longitude,
-          ),
+          position: LatLng(pro.latitude, pro.longitude),
           infoWindow: InfoWindow(
             title: pro.name,
             snippet: '${pro.rating} ★ • ${_getDistanceText(pro)} away',
           ),
           icon: BitmapDescriptor.defaultMarkerWithHue(
-            isSelected
-                ? BitmapDescriptor.hueViolet
-                : BitmapDescriptor.hueRed,
+            isSelected ? BitmapDescriptor.hueViolet : BitmapDescriptor.hueRed,
           ),
           onTap: () {
             setState(() {
@@ -334,12 +386,27 @@ class _NearbyProfessionalsMapScreenState
 
             _pageController.animateToPage(
               i,
-              duration: const Duration(
-                milliseconds: 350,
-              ),
+              duration: const Duration(milliseconds: 350),
               curve: Curves.easeInOut,
             );
           },
+        ),
+      );
+    }
+
+    final focusedLocation = _focusedProviderLocation;
+    if (focusedLocation != null) {
+      markers.add(
+        Marker(
+          markerId: MarkerId('focused_provider_${widget.focusedProviderId}'),
+          position: focusedLocation,
+          infoWindow: InfoWindow(
+            title: _focusedProviderName ?? 'Service Provider',
+          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueViolet,
+          ),
+          zIndexInt: 1,
         ),
       );
     }
@@ -368,12 +435,8 @@ class _NearbyProfessionalsMapScreenState
         center: _userLocation,
         radius: radiusMeters,
         strokeWidth: 2,
-        strokeColor: AppColors.primary.withValues(
-          alpha: 0.6,
-        ),
-        fillColor: AppColors.primary.withValues(
-          alpha: 0.08,
-        ),
+        strokeColor: AppColors.primary.withValues(alpha: 0.6),
+        fillColor: AppColors.primary.withValues(alpha: 0.08),
       ),
     };
   }
@@ -382,10 +445,7 @@ class _NearbyProfessionalsMapScreenState
   // PROFESSIONAL PAGE CHANGE
   // ---------------------------------------------------------------------------
 
-  void _onProChanged(
-    int index,
-    List<ProfessionalModel> pros,
-  ) {
+  void _onProChanged(int index, List<ProfessionalModel> pros) {
     if (index >= pros.length) {
       return;
     }
@@ -398,13 +458,7 @@ class _NearbyProfessionalsMapScreenState
 
     _mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(
-            pro.latitude,
-            pro.longitude,
-          ),
-          zoom: 15.0,
-        ),
+        CameraPosition(target: LatLng(pro.latitude, pro.longitude), zoom: 15.0),
       ),
     );
   }
@@ -414,14 +468,9 @@ class _NearbyProfessionalsMapScreenState
   // ---------------------------------------------------------------------------
 
   Future<void> _makeCall(String phone) async {
-    final cleanPhone = phone.replaceAll(
-      RegExp(r'\s+'),
-      '',
-    );
+    final cleanPhone = phone.replaceAll(RegExp(r'\s+'), '');
 
-    final uri = Uri.parse(
-      'tel:$cleanPhone',
-    );
+    final uri = Uri.parse('tel:$cleanPhone');
 
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
@@ -429,9 +478,7 @@ class _NearbyProfessionalsMapScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Dialing $phone...',
-            ),
+            content: Text('Dialing $phone...'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -543,25 +590,14 @@ class _NearbyProfessionalsMapScreenState
 
   Widget _buildTopBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 8,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.background.withValues(
-          alpha: 0.92,
-        ),
+        color: AppColors.background.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.border.withValues(
-            alpha: 0.5,
-          ),
-        ),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.3,
-            ),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -570,7 +606,11 @@ class _NearbyProfessionalsMapScreenState
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+            icon: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 18,
+            ),
             onPressed: () {
               if (Navigator.of(context).canPop()) {
                 Navigator.of(context).pop();
@@ -607,14 +647,10 @@ class _NearbyProfessionalsMapScreenState
           ),
           IconButton(
             icon: Icon(
-              _isListView
-                  ? Icons.map_rounded
-                  : Icons.list_alt_rounded,
+              _isListView ? Icons.map_rounded : Icons.list_alt_rounded,
               color: AppColors.secondary,
             ),
-            tooltip: _isListView
-                ? 'Show Map'
-                : 'Show List',
+            tooltip: _isListView ? 'Show Map' : 'Show List',
             onPressed: () {
               setState(() {
                 _isListView = !_isListView;
@@ -636,18 +672,10 @@ class _NearbyProfessionalsMapScreenState
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _categories.length,
-        separatorBuilder: (
-          context,
-          index,
-        ) =>
-            const SizedBox(width: 8),
-        itemBuilder: (
-          context,
-          index,
-        ) {
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
           final cat = _categories[index];
-          final isSelected =
-              cat == _selectedCategory;
+          final isSelected = cat == _selectedCategory;
 
           return ChoiceChip(
             label: Text(cat),
@@ -657,34 +685,23 @@ class _NearbyProfessionalsMapScreenState
                 setState(() {
                   _selectedCategory = cat;
                   _selectedProIndex = 0;
-                  _professionalNotificationCreated =
-                      false;
+                  _professionalNotificationCreated = false;
                 });
               }
             },
             selectedColor: AppColors.primary,
-            backgroundColor:
-                AppColors.card.withValues(
-              alpha: 0.9,
-            ),
+            backgroundColor: AppColors.card.withValues(alpha: 0.9),
             labelStyle: TextStyle(
-              color: isSelected
-                  ? Colors.white
-                  : AppColors.textSecondary,
+              color: isSelected ? Colors.white : AppColors.textSecondary,
               fontSize: 12,
-              fontWeight: isSelected
-                  ? FontWeight.bold
-                  : FontWeight.normal,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
             shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(16),
               side: BorderSide(
                 color: isSelected
                     ? AppColors.primary
-                    : AppColors.border.withValues(
-                        alpha: 0.5,
-                      ),
+                    : AppColors.border.withValues(alpha: 0.5),
               ),
             ),
           );
@@ -704,31 +721,19 @@ class _NearbyProfessionalsMapScreenState
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.card.withValues(
-          alpha: 0.9,
-        ),
+        color: AppColors.card.withValues(alpha: 0.9),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: AppColors.border.withValues(
-            alpha: 0.4,
-          ),
-        ),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.4)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.25,
-            ),
+            color: Colors.black.withValues(alpha: 0.25),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: IconButton(
-        icon: Icon(
-          icon,
-          color: Colors.white,
-          size: 20,
-        ),
+        icon: Icon(icon, color: Colors.white, size: 20),
         tooltip: tooltip,
         onPressed: onTap,
       ),
@@ -745,26 +750,18 @@ class _NearbyProfessionalsMapScreenState
       backgroundColor: AppColors.card,
       barrierColor: Colors.black54,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 20,
-              horizontal: 16,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     'Search Distance Radius',
                     style: TextStyle(
@@ -775,36 +772,34 @@ class _NearbyProfessionalsMapScreenState
                   ),
                 ),
                 const SizedBox(height: 12),
-                ..._radiusOptions.map(
-                  (r) {
-                    final isSelected = _selectedRadius == r;
-                    return ListTile(
-                      dense: true,
-                      title: Text(
-                        'Within $r',
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                      leading: Icon(
-                        isSelected
-                            ? Icons.radio_button_checked_rounded
-                            : Icons.radio_button_unchecked_rounded,
-                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                      ),
-                      onTap: isSelected
-                          ? null
-                          : () {
-                              setState(() {
-                                _selectedRadius = r;
-                              });
-                              if (Navigator.of(context).canPop()) {
-                                Navigator.pop(context);
-                              }
-                            },
-                    );
-                  },
-                ),
+                ..._radiusOptions.map((r) {
+                  final isSelected = _selectedRadius == r;
+                  return ListTile(
+                    dense: true,
+                    title: Text(
+                      'Within $r',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    leading: Icon(
+                      isSelected
+                          ? Icons.radio_button_checked_rounded
+                          : Icons.radio_button_unchecked_rounded,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
+                    ),
+                    onTap: isSelected
+                        ? null
+                        : () {
+                            setState(() {
+                              _selectedRadius = r;
+                            });
+                            if (Navigator.of(context).canPop()) {
+                              Navigator.pop(context);
+                            }
+                          },
+                  );
+                }),
               ],
             ),
           ),
@@ -817,13 +812,11 @@ class _NearbyProfessionalsMapScreenState
   // MAP VIEW
   // ---------------------------------------------------------------------------
 
-  Widget _buildMapView(
-    List<ProfessionalModel> pros,
-  ) {
+  Widget _buildMapView(List<ProfessionalModel> pros) {
     return GoogleMap(
       initialCameraPosition: CameraPosition(
-        target: _userLocation,
-        zoom: 14.5,
+        target: _focusedProviderLocation ?? _userLocation,
+        zoom: _focusedProviderLocation == null ? 14.5 : 16,
       ),
       mapType: _currentMapType,
       markers: _buildMarkers(pros),
@@ -832,11 +825,17 @@ class _NearbyProfessionalsMapScreenState
       zoomControlsEnabled: false,
       compassEnabled: true,
       mapToolbarEnabled: false,
-      style: _currentMapType == MapType.normal
-          ? _darkMapStyle
-          : null,
+      style: _currentMapType == MapType.normal ? _darkMapStyle : null,
       onMapCreated: (controller) {
         _mapController = controller;
+        final location = _focusedProviderLocation;
+        if (location != null) {
+          controller.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(target: location, zoom: 16),
+            ),
+          );
+        }
       },
     );
   }
@@ -845,14 +844,11 @@ class _NearbyProfessionalsMapScreenState
   // LIST VIEW
   // ---------------------------------------------------------------------------
 
-  Widget _buildListView(
-    List<ProfessionalModel> pros,
-  ) {
+  Widget _buildListView(List<ProfessionalModel> pros) {
     if (pros.isEmpty) {
       return Center(
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
               Icons.location_off_rounded,
@@ -862,10 +858,7 @@ class _NearbyProfessionalsMapScreenState
             const SizedBox(height: 14),
             Text(
               'No technicians found for "$_selectedCategory"',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
         ),
@@ -873,22 +866,10 @@ class _NearbyProfessionalsMapScreenState
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        120,
-        16,
-        30,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 120, 16, 30),
       itemCount: pros.length,
-      separatorBuilder: (
-        context,
-        index,
-      ) =>
-          const SizedBox(height: 14),
-      itemBuilder: (
-        context,
-        index,
-      ) {
+      separatorBuilder: (context, index) => const SizedBox(height: 14),
+      itemBuilder: (context, index) {
         final pro = pros[index];
 
         return _buildListCard(pro);
@@ -900,18 +881,10 @@ class _NearbyProfessionalsMapScreenState
   // CAROUSEL CARD
   // ---------------------------------------------------------------------------
 
-  Widget _buildCarouselCard(
-    ProfessionalModel pro,
-    bool isSelected,
-  ) {
+  Widget _buildCarouselCard(ProfessionalModel pro, bool isSelected) {
     return AnimatedContainer(
-      duration: const Duration(
-        milliseconds: 250,
-      ),
-      margin: const EdgeInsets.symmetric(
-        horizontal: 6,
-        vertical: 4,
-      ),
+      duration: const Duration(milliseconds: 250),
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -919,24 +892,19 @@ class _NearbyProfessionalsMapScreenState
         border: Border.all(
           color: isSelected
               ? AppColors.primary
-              : AppColors.border.withValues(
-                  alpha: 0.4,
-                ),
+              : AppColors.border.withValues(alpha: 0.4),
           width: isSelected ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.3,
-            ),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -944,10 +912,8 @@ class _NearbyProfessionalsMapScreenState
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(alpha: 0.15),
-                  borderRadius:
-                      BorderRadius.circular(14),
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   _getCategoryIcon(pro.category),
@@ -958,8 +924,7 @@ class _NearbyProfessionalsMapScreenState
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
@@ -967,22 +932,18 @@ class _NearbyProfessionalsMapScreenState
                           child: Text(
                             pro.name,
                             maxLines: 1,
-                            overflow:
-                                TextOverflow.ellipsis,
-                            style:
-                                const TextStyle(
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 15,
-                              fontWeight:
-                                  FontWeight.bold,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         if (pro.isVerified)
                           const Icon(
                             Icons.verified_rounded,
-                            color:
-                                AppColors.primary,
+                            color: AppColors.primary,
                             size: 16,
                           ),
                       ],
@@ -991,11 +952,9 @@ class _NearbyProfessionalsMapScreenState
                     Text(
                       pro.specialty,
                       maxLines: 1,
-                      overflow:
-                          TextOverflow.ellipsis,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color:
-                            AppColors.textSecondary,
+                        color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -1022,15 +981,13 @@ class _NearbyProfessionalsMapScreenState
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     ' (${pro.reviewCount})',
                     style: const TextStyle(
-                      color:
-                          AppColors.textSecondary,
+                      color: AppColors.textSecondary,
                       fontSize: 11,
                     ),
                   ),
@@ -1038,24 +995,17 @@ class _NearbyProfessionalsMapScreenState
               ),
               const SizedBox(width: 14),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 7,
-                  vertical: 2,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(alpha: 0.15),
-                  borderRadius:
-                      BorderRadius.circular(6),
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   '${pro.trustScore}% Trust Score',
                   style: const TextStyle(
                     color: AppColors.secondary,
                     fontSize: 11,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -1063,11 +1013,9 @@ class _NearbyProfessionalsMapScreenState
               Text(
                 _getDistanceText(pro),
                 style: const TextStyle(
-                  color:
-                      AppColors.textSecondary,
+                  color: AppColors.textSecondary,
                   fontSize: 12,
-                  fontWeight:
-                      FontWeight.w600,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -1084,8 +1032,7 @@ class _NearbyProfessionalsMapScreenState
                   color: AppColors.success,
                   size: 20,
                 ),
-                onPressed: () =>
-                    _makeCall(pro.phoneNumber),
+                onPressed: () => _makeCall(pro.phoneNumber),
                 tooltip: 'Call Technician',
               ),
               const SizedBox(width: 4),
@@ -1096,33 +1043,21 @@ class _NearbyProfessionalsMapScreenState
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            ProfessionalDetailsScreen(
-                          professional: pro,
-                        ),
+                            ProfessionalDetailsScreen(professional: pro),
                       ),
                     );
                   },
-                  style:
-                      ElevatedButton.styleFrom(
-                    backgroundColor:
-                        AppColors.primary,
-                    foregroundColor:
-                        Colors.white,
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(12),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    padding:
-                        const EdgeInsets.symmetric(
-                      vertical: 8,
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                   ),
                   child: const Text(
                     'View Details',
-                    style: TextStyle(
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(fontSize: 12),
                   ),
                 ),
               ),
@@ -1137,23 +1072,16 @@ class _NearbyProfessionalsMapScreenState
   // LIST CARD
   // ---------------------------------------------------------------------------
 
-  Widget _buildListCard(
-    ProfessionalModel pro,
-  ) {
+  Widget _buildListCard(ProfessionalModel pro) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.border.withValues(
-            alpha: 0.4,
-          ),
-        ),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.4)),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -1161,10 +1089,8 @@ class _NearbyProfessionalsMapScreenState
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(alpha: 0.15),
-                  borderRadius:
-                      BorderRadius.circular(14),
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
                   _getCategoryIcon(pro.category),
@@ -1175,24 +1101,21 @@ class _NearbyProfessionalsMapScreenState
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       pro.name,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       pro.specialty,
                       style: const TextStyle(
-                        color:
-                            AppColors.textSecondary,
+                        color: AppColors.textSecondary,
                         fontSize: 13,
                       ),
                     ),
@@ -1221,31 +1144,27 @@ class _NearbyProfessionalsMapScreenState
               ),
               const SizedBox(width: 14),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 3,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.primary
-                      .withValues(alpha: 0.15),
-                  borderRadius:
-                      BorderRadius.circular(8),
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${pro.trustScore}% AI Trust',
                   style: const TextStyle(
                     color: AppColors.secondary,
                     fontSize: 12,
-                    fontWeight:
-                        FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               const Spacer(),
               Text(
                 '${_getDistanceText(pro)} away',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -1256,8 +1175,7 @@ class _NearbyProfessionalsMapScreenState
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () =>
-                      _makeCall(pro.phoneNumber),
+                  onPressed: () => _makeCall(pro.phoneNumber),
                   icon: const Icon(
                     Icons.call_rounded,
                     size: 16,
@@ -1265,20 +1183,14 @@ class _NearbyProfessionalsMapScreenState
                   ),
                   label: const Text(
                     'Call',
-                    style: TextStyle(
-                      color: AppColors.success,
-                    ),
+                    style: TextStyle(color: AppColors.success),
                   ),
-                  style:
-                      OutlinedButton.styleFrom(
+                  style: OutlinedButton.styleFrom(
                     side: BorderSide(
-                      color: AppColors.success
-                          .withValues(alpha: 0.5),
+                      color: AppColors.success.withValues(alpha: 0.5),
                     ),
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
@@ -1291,26 +1203,18 @@ class _NearbyProfessionalsMapScreenState
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
-                            ProfessionalDetailsScreen(
-                          professional: pro,
-                        ),
+                            ProfessionalDetailsScreen(professional: pro),
                       ),
                     );
                   },
-                  style:
-                      ElevatedButton.styleFrom(
-                    backgroundColor:
-                        AppColors.primary,
-                    foregroundColor:
-                        Colors.white,
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(12),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child:
-                      const Text('View Details'),
+                  child: const Text('View Details'),
                 ),
               ),
             ],
@@ -1324,9 +1228,7 @@ class _NearbyProfessionalsMapScreenState
   // CATEGORY ICON
   // ---------------------------------------------------------------------------
 
-  IconData _getCategoryIcon(
-    String category,
-  ) {
+  IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
       case 'electrical':
         return Icons.electrical_services_rounded;
