@@ -14,7 +14,7 @@ class DiagnosisApiService {
       return 'http://localhost:3000';
     }
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:3000';
+      return 'http://10.84.152.57:3000';
     }
     return 'http://localhost:3000';
   }
